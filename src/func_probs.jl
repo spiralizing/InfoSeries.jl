@@ -15,18 +15,32 @@ function prob_marg(serie::Array{Float64,1})
 end
 ###############################################################################
 #esta funcion calcula la probabilidad conjunta de dos variables en dos series
-#, separadas por una distancia d > 0
+#, separadas por una distancia d
 function prob_conj(s1::Array{Float64}, s2::Array{Float64}, d::Int64)
     tam = min(length(s1), length(s2))
     Pxy = Dict{String, Float64}()
-    Pyx = Dict{String, Float64}()
     for i = 1:tam-d
         xy = string(s1[i], ',', s2[i+d]) #se calculan las probabilidades conjuntas
-        yx = string(s2[i], ',', s1[i+d])
-        Pxy[xy] = get(Pxy, xy, 0) + 1/(tam-d)
-        Pyx[yx] = get(Pyx, yx, 0) + 1/(tam-d)
+        Pxy[xy] = get(Pxy, xy, 0) + 1
     end
-    return Pxy, Pyx
+    for j in keys(Pxy)
+        Pxy[j] = Pxy[j] / (tam-d)
+    end
+    return Pxy
+end
+###################################################################################
+#next function calculates the probability of 3 random variables from 2 series at distance d
+function prob_conj3(s1::Array{Float64}, s2::Array{Float64}, d::Int64)
+    tam = min(length(s1), length(s2))
+    Pxyz = Dict{String,Float64}()
+    for i = 1:(tam-d)
+        xyz = string(s1[i],',' ,s2[i], ',', s1[i+d])
+        Pxyz[xyz] = get(Pxyz, xyz, 0) + 1
+    end
+    for j in keys(Pxyz)
+        Pxyz[j] = Pxyz[j] / (tam-d)
+    end
+    return Pxyz
 end
 ############################################################################
 #esta funcion calcula la probabilidad conjunta con la regla de sucesor de laplace
@@ -178,4 +192,24 @@ function distro(s::Array{Float64})
         H[j] = H[j] / N
     end
     return H
+end
+#########################################################################
+#this function evaluates the information transfer from s1 to s2 at a lag τ
+function transfer(s1::Array{Float64}, s2::Array{Float64}, τ::Int64)
+    m = prob_marg(s1)
+    #since the transfer is from s1 to s2 only the marginal of s1 is needed
+    Pxy = prob_conj(s1,s2,0)
+    Pyx = prob_conj(s2,s1,0)
+    Pxyz = prob_conj3(s1,s2,τ)
+    tr = 0
+    #now we calculate the information transfer
+    for i in keys(Pxyz)
+        A = split(i, ',')
+        xyz = string(A[1], '-', A[2], '-', A[3])
+        xy = string(A[1], '-', A[2])
+        xz = string(A[1], '-', A[3])
+        x = parse(Float64,A[1])
+        tr += Pxyz[i] * log10(Pxyz[i] * m[x] / (Pxy[xy] * Pxz[xz]))
+    end
+    return tr
 end
