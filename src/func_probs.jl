@@ -205,9 +205,9 @@ function transfer(s1::Array{Float64}, s2::Array{Float64}, τ::Int64)
     #now we calculate the information transfer
     for i in keys(Pxyz)
         A = split(i, ',')
-        xyz = string(A[1], '-', A[2], '-', A[3])
-        xy = string(A[1], '-', A[2])
-        xz = string(A[1], '-', A[3])
+        xyz = string(A[1], ',', A[2], ',', A[3])
+        xy = string(A[1], ',', A[2])
+        xz = string(A[1], ',', A[3])
         x = parse(Float64,A[1])
         tr += Pxyz[i] * log10(Pxyz[i] * m[x] / (Pxy[xy] * Pxz[xz]))
     end
