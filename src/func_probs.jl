@@ -168,3 +168,14 @@ function histo(s::Array{Float64})
     end
     return H
 end
+function distro(s::Array{Float64})
+    H = Dict{Float64,Float64}()
+    N = length(s)
+    for i = 1:length(s)
+        H[s[i]] = get(H, s[i], 0) + 1
+    end
+    for j in keys(H)
+        H[j] = H[j] / N
+    end
+    return H
+end
