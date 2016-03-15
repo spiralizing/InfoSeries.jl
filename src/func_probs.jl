@@ -207,9 +207,9 @@ function transfer(s1::Array{Float64}, s2::Array{Float64}, τ::Int64)
         A = split(i, ',')
         xyz = string(A[1], ',', A[2], ',', A[3])
         xy = string(A[1], ',', A[2])
-        xz = string(A[1], ',', A[3])
+        yx = string(A[2], ',', A[1])
         x = parse(Float64,A[1])
-        tr += Pxyz[i] * log10(Pxyz[i] * m[x] / (Pxy[xy] * Pxz[xz]))
+        tr += Pxyz[i] * log10(Pxyz[i] * m[x] / (Pxy[xy] * Pyx[yx]))
     end
     return tr
 end

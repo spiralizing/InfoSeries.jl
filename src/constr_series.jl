@@ -1,5 +1,5 @@
 #Se definen las funciones
-function gaps_notas!(Voz::Array{Float64,2}) #La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que hay entre notas que terminan y que empiezan
+function gaps_notas!(Voz::Array{Float64,2}, q::Float64) #La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que hay entre notas que terminan y que empiezan
   for i = 1:(length(Voz[:,1])-1)
       m = abs(Voz[i,2] - Voz[i+1,1])
       if m < q
@@ -23,7 +23,7 @@ function gaps_silencios!(Voz::Array{Float64,2}) # La funcion toma de entrada el 
     end
 end
 
-function min_voces(Voces::Array{Array{Float64,2},1}) #la funcion regresa el minimo valor de duracion
+function min_voces(Voces::Array{Array{Float64,2},1}, ns::Int64) #la funcion regresa el minimo valor de duracion
     mins = Array(Float64,ns)
     for i = 1:ns
         mins[i] = minimum(Voces[i][:,2] - Voces[i][:,1])
@@ -31,7 +31,7 @@ function min_voces(Voces::Array{Array{Float64,2},1}) #la funcion regresa el mini
     return minimum(mins)
 end
 
-function max_tempo(Voces::Array{Array{Float64,2},1}) #la funcion encuentra el tiempo maximo de termino de notas, es decir donde termina la pieza
+function max_tempo(Voces::Array{Array{Float64,2},1}, ns::Int64) #la funcion encuentra el tiempo maximo de termino de notas, es decir donde termina la pieza
     Tfinal = Array(Float64,ns)
     for i = 1:ns
         Tfinal[i] = maximum(Voces[i][:,2])
