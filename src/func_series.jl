@@ -120,20 +120,20 @@ function binning_dfa(serie::Array{Float64}, m::Int64, nu::Float64)
 end
 #########################################################################
 #the next function calculates the intervals in a time series Δx
-function inter_serie(s::Array{Float64})
-    n = length(s)-1
+function inter_serie(s::Array{Float64},d::Int64)
+    n = length(s)-d
     dif = [99999.0 for i=1:n]
     for i = 1:n
         k = 1
-        if s[i] != 0 && s[i+1] != 0
+        if s[i] != 0 && s[i+d] != 0
             dif[i] = s[i+1] - s[i]
         end
-        if s[i] != 0 && s[i+1] == 0
+        if s[i] != 0 && s[i+d] == 0
             while s[i+k] == 0 && (i+k) < n
                 k+=1
             end
-            if s[i+k+1] != 0
-                dif[i+k-1] = s[i+k+1] - s[i]
+            if s[i+k+d] != 0
+                dif[i+k-1] = s[i+k+d] - s[i]
             end
         end
     end

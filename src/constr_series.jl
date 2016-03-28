@@ -54,7 +54,25 @@ function serie_notas(Voz::Array{Float64,2}, tmax::Int64) #construye la serie de 
     end
     return(serie)
 end
-
+############################################################################################
+#La siguiente funcion construye un arreglo de dos dimensiones que contiene la serie de "ritmo" y serie de notas
+function series_desdoble(s::Array{Float64,2})
+    sr = Float64[]
+    sp = Float64[]
+    if s[1,1] != 0
+        push!(sr,s[1,1])
+        push!(sp, 0)
+    else
+        push!(sr, s[1,2] - s[1,1])
+        push!(sp, s[1,3])
+    end
+    for i=2:length(s[:,1])
+        push!(sr, s[i,2] - s[i,1])
+        push!(sp, s[i,3])
+    end
+    return [sr sp]
+end
+####################################################################################################################
 function indice(tmax::Int64) #esta funcion solo regresa el arreglo que lleva el indice(numero) de las notas (o el eje x)
     ind = Array(Float64,tmax)
     for i = 1:tmax
@@ -62,7 +80,7 @@ function indice(tmax::Int64) #esta funcion solo regresa el arreglo que lleva el 
     end
     return(ind)
 end
-
+##############################################################################################################################
 function notas_hertz!(notas::Array{Float64,1}) #esta funcion convierte el arreglo de entrada de numero de nota a su valor en hertz con A4 = 440Hz
     a4 = 440.0
     x = 1.0/12.0
