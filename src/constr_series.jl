@@ -72,6 +72,24 @@ function series_desdoble(s::Array{Float64,2})
     end
     return [sr sp]
 end
+#########################################################################################################
+#La siguiente funcion es para filtrar csv, 
+function filt_vozcsv(v::Array{Any,2})
+    sti = Float64[]
+    stf = Float64[]
+    sp = Float64[]
+    si = Float64[]
+    for i=1:size(v)[1] #
+        if v[i,6] == 0; continue; end #aqui se salta todas las notas que "terminan"
+        c = 1
+        if v[i,5] != v[i+c,5] && v[i+c,6] != 0 #aqui se encuentra en donde termina la nota que inicio
+            c += 1
+        else
+            push!(sti, v[i,2]); push!(stf, v[i+c,2]); push!(sp, v[i,5]); push!(si, v[i,6]) #una vez que se encuentra en donde termino se agregan
+        end
+    end
+    return [sti stf sp si]
+end
 ####################################################################################################################
 function indice(tmax::Int64) #esta funcion solo regresa el arreglo que lleva el indice(numero) de las notas (o el eje x)
     ind = Array(Float64,tmax)
