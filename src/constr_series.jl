@@ -59,6 +59,7 @@ end
 function series_desdoble(s::Array{Float64,2})
     sr = Float64[]
     sp = Float64[]
+    si = Float64[]
     if s[1,1] != 0
         push!(sr,s[1,1])
         push!(sp, 0)
@@ -73,7 +74,7 @@ function series_desdoble(s::Array{Float64,2})
     return [sr sp]
 end
 #########################################################################################################
-#La siguiente funcion es para filtrar csv, 
+#La siguiente funcion es para filtrar csv,
 function filt_vozcsv(v::Array{Any,2})
     sti = Float64[]
     stf = Float64[]
