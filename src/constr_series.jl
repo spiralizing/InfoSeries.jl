@@ -63,6 +63,7 @@ function series_desdoble(s::Array{Float64,2})
     if s[1,1] != 0
         push!(sr,s[1,1])
         push!(sp, 0)
+        push!(si, 0)
     else
         push!(sr, s[1,2] - s[1,1])
         push!(sp, s[1,3])
@@ -72,6 +73,16 @@ function series_desdoble(s::Array{Float64,2})
         push!(sp, s[i,3])
     end
     return [sr sp]
+end
+####################################################################################################
+#esta funcion es solo para dividir las intensidades en 0,p,mp,mf,f p.ej.
+function nota_intens!(s::Array{Float64,1})
+    for i=1:length(s)
+        elseif s[i] > 0 && s[i] <= 32; s[i] = 1;
+        elseif s[i] > 32 && s[i] <= 64; s[i] = 2;
+        elseif s[i] > 64 && s[i] <= 96; s[i] = 3;
+        elseif s[i] > 96; s[i] = 4; end
+    end
 end
 #########################################################################################################
 #La siguiente funcion es para filtrar csv,
