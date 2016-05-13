@@ -65,20 +65,19 @@ function series_desdoble(s::Array{Float64,2})
         push!(sp, 0)
         push!(si, 0)
     else
-        push!(sr, s[1,2] - s[1,1])
-        push!(sp, s[1,3])
+        push!(sr, s[1,2] - s[1,1]); push!(sp, s[1,3]); push!(si, s[1,4])
+
     end
     for i=2:length(s[:,1])
-        push!(sr, s[i,2] - s[i,1])
-        push!(sp, s[i,3])
+        push!(sr, s[i,2] - s[i,1]); push!(sp, s[i,3]); push!(si, s[i,4])
     end
-    return [sr sp]
+    return [sr sp si]
 end
 ####################################################################################################
 #esta funcion es solo para dividir las intensidades en 0,p,mp,mf,f p.ej.
 function nota_intens!(s::Array{Float64,1})
     for i=1:length(s)
-        elseif s[i] > 0 && s[i] <= 32; s[i] = 1;
+        if s[i] > 0 && s[i] <= 32; s[i] = 1;
         elseif s[i] > 32 && s[i] <= 64; s[i] = 2;
         elseif s[i] > 64 && s[i] <= 96; s[i] = 3;
         elseif s[i] > 96; s[i] = 4; end
@@ -94,10 +93,16 @@ function filt_vozcsv(v::Array{Any,2})
     for i=1:size(v)[1] #
         if v[i,6] == 0; continue; end #aqui se salta todas las notas que "terminan"
         c = 1
+        din = 0
         if v[i,5] != v[i+c,5] && v[i+c,6] != 0 #aqui se encuentra en donde termina la nota que inicio
             c += 1
         else
-            push!(sti, v[i,2]); push!(stf, v[i+c,2]); push!(sp, v[i,5]); push!(si, v[i,6]) #una vez que se encuentra en donde termino se agregan
+            push!(sti, v[i,2]); push!(stf, v[i+c,2]); push!(sp, v[i,5])
+            if v[i,6] > 0 && v[i,6] <= 32; din = 1;
+            elseif v[i,6] > 32 && v[i,6] <= 64; din = 2;
+            elseif v[i,6] > 64 && v[i,6] <= 96; din = 3;
+            elseif v[i,6] > 96; din = 4; end
+            push!(si, din)
         end
     end
     return [sti stf sp si]
