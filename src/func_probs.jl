@@ -13,6 +13,18 @@ function prob_marg(serie::Array{Float64,1})
     end
     return M
 end
+function prob_marg(serie::Array{AbstractString,1})
+    tam = length(serie)
+    M = Dict{AbstractString,Float64}()
+    for i = 1:tam
+        M[serie[i]] = get(M, serie[i], 0) + 1
+    end
+    for j in keys(M)
+        M[j] = M[j] / tam
+    end
+    return M
+end
+
 ###############################################################################
 #esta funcion calcula la probabilidad conjunta de dos variables en dos series
 #, separadas por una distancia d
@@ -147,6 +159,40 @@ function mutual_inf(s1::Array{Float64}, s2::Array{Float64})
     IM[tam] = IM[tam] / 2
     return [ind IM]
 end
+function mutual_inf(s1::Array{AbstractString}, s2::Array{AbstractString})
+    tam = min(length(s1), length(s2))
+    My = prob_marg(s2)
+    Mx = prob_marg(s1)
+    ind = zeros(2 * tam - 1)
+    IM = zeros(2 * tam -1)
+    for d = 0:(tam-1)
+        Pxy = Dict{AbstractString,Float64}() #se definen los diccionarios para las probabilidades conjuntas
+        Pyx = Dict{AbstractString,Float64}()
+        for i = 1:(tam-d)
+            xy = string(s1[i], '+', s2[i+d]) #se calculan las probabilidades conjuntas
+            yx = string(s2[i], '+', s1[i+d])
+            Pxy[xy] = get(Pxy, xy, 0) + 1/(tam-d)
+            Pyx[yx] = get(Pyx, yx, 0) + 1/(tam-d)
+        end
+        for j in keys(Pxy) #se calcula la informacion mutua pa delante
+            A = split(j, '+')
+            x = parse(AbstractString,A[1])
+            y = parse(AbstractString,A[2])
+            IM[tam + d] += Pxy[j] * log10(Pxy[j]/(Mx[x] * My[y]))
+        end
+        for j in keys(Pyx) #se calcula la informacion mutua pa tras
+            A = split(j, '+')
+            x = A[2]
+            y = A[1]
+            IM[tam - d] += Pyx[j] * log10(Pyx[j]/(Mx[x] * My[y]))
+        end
+        ind[tam - d] = - d
+        ind[tam + d] = d
+    end
+    IM[tam] = IM[tam] / 2
+    return [ind IM]
+end
+
 ##################################################################################
 #This is the calculation of the auto mutual information.
 function auto_inf(s::Array{Float64})
@@ -173,6 +219,31 @@ function auto_inf(s::Array{Float64})
     end
     return [ind AI]
 end
+function auto_inf(s::Array{AbstractString})
+    tam = length(s)
+    M = prob_marg(s)
+    ind = zeros(tam)
+    AI = zeros(tam)
+    for d = 0:(tam-1)
+        Pxx = Dict{AbstractString,Float64}() #se definen los diccionarios para las probabilidades conjuntas
+        for i = 1:(tam-d)
+            xx = string(s[i], '+', s[i+d]) #se calculan las probabilidades conjuntas
+            Pxx[xx] = get(Pxx, xx, 0) + 1
+        end
+        for j in keys(Pxx)
+            Pxx[j] = Pxx[j] / (tam - d)
+        end
+        for j in keys(Pxx) #se calcula la informacion mutua pa delante
+            A = split(j, '+')
+            x = A[1]
+            y = A[2]
+            AI[d+1] += Pxx[j] * log10(Pxx[j]/(M[x] * M[y]))
+        end
+        ind[d+1] = d
+    end
+    return [ind AI]
+end
+
 #################################################################################
 #the next function is for the histogram of values for the series s
 function histo(s::Array{Float64})

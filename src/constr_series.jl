@@ -133,3 +133,13 @@ function notas_hertz!(notas::Array{Float64,1}) #esta funcion convierte el arregl
         notas[i] = a4 * r ^ d
     end
 end
+#################################################################################
+function note_vec(v::Array{Float64,2})
+    n = size(v)[1]
+    vec = AbstractString[]
+    for i=1:n
+        nota = string(v[i,1], ',', v[i,2], ',', v[i,3])
+        push!(vec, nota)
+    end
+    return vec
+end
