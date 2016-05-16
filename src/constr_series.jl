@@ -56,22 +56,27 @@ function serie_notas(Voz::Array{Float64,2}, tmax::Int64) #construye la serie de 
 end
 ############################################################################################
 #La siguiente funcion construye un arreglo de dos dimensiones que contiene la serie de "ritmo" y serie de notas
-function series_desdoble(s::Array{Float64,2})
+function series_desdoble(s::Array{Float64,2}, tmax)
     sr = Float64[]
     sp = Float64[]
     si = Float64[]
-    if s[1,1] != 0
-        push!(sr,s[1,1])
-        push!(sp, 0)
-        push!(si, 0)
+    if s[1,1] != 0 #se asegura de llenar los silencios del principio
+        push!(sr,s[1,1]); push!(sp, 0); push!(si, 0)
     else
         push!(sr, s[1,2] - s[1,1]); push!(sp, s[1,3]); push!(si, s[1,4])
-
     end
-    for i=2:length(s[:,1])
-        push!(sr, s[i,2] - s[i,1]); push!(sp, s[i,3]); push!(si, s[i,4])
+    for i=2:(length(s[:,1])-1) #se hacen todas las notas intermedias
+        if s[i,2] != s[i+1]
+            push!(sr, s[i+1,1] - s[i,2]); push!(sp, 0); push!(si, 0)
+        else
+            push!(sr, s[i,2] - s[i,1]); push!(sp, s[i,3]); push!(si, s[i,4])
+        end
     end
-    return [sr sp si]
+    push!(sr, s[end,2] - s[end,1]); push!(sp, s[end,3]); push!(si, s[end,4]) #esta es la ultima nota
+    if s[end,2] < tmax
+        push!(sr, tmax - s[end,2]); push!(sp, 0); push!(si, 0)  #si es que hay silencios, esto lo completa
+    end
+    return [sr sp si] #regresa el arreglo por ritmo, nota e intensidad.
 end
 ####################################################################################################
 #esta funcion es solo para dividir las intensidades en 0,p,mp,mf,f p.ej.
