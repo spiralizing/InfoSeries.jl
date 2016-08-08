@@ -176,8 +176,8 @@ function mutual_inf(s1::Array{AbstractString}, s2::Array{AbstractString})
         end
         for j in keys(Pxy) #se calcula la informacion mutua pa delante
             A = split(j, '+')
-            x = parse(AbstractString,A[1])
-            y = parse(AbstractString,A[2])
+            x = A[1]
+            y = A[2]
             IM[tam + d] += Pxy[j] * log10(Pxy[j]/(Mx[x] * My[y]))
         end
         for j in keys(Pyx) #se calcula la informacion mutua pa tras

@@ -96,10 +96,10 @@ function filt_vozcsv(v::Array{Any,2})
     sp = Float64[]
     si = Float64[]
     for i=1:size(v)[1] #
-        if v[i,6] == 0; continue; end #aqui se salta todas las notas que "terminan"
+        if v[i,6] == 0 || v[i,3] == " Note_off_c"; continue; end #aqui se salta todas las notas que "terminan"
         c = 1
         din = 0
-        if v[i,5] != v[i+c,5] && v[i+c,6] != 0 #aqui se encuentra en donde termina la nota que inicio
+        if v[i,5] != v[i+c,5] #&& v[i+c,6] != 0 #aqui se encuentra en donde termina la nota que inicio
             c += 1
         else
             push!(sti, v[i,2]); push!(stf, v[i+c,2]); push!(sp, v[i,5])
@@ -142,4 +142,9 @@ function note_vec(v::Array{Float64,2})
         push!(vec, nota)
     end
     return vec
+end
+#######################################################################################
+function gaps_ms(s::Array{Float64,2})
+    
+
 end
