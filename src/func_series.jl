@@ -203,8 +203,67 @@ function dfa_calc(notas::Array{Float64,2}, temp::Array{Float64,1}, p::Int64)
     end
     #writedlm("grafica.dat", [si fu], '\t')
     sid = si - log10(tmin)
-    tm = convert(Int,trunc(sid[end] / 0.05)) #0.08 es la ventana mas grande de la serie.
-    ind = binning_dfa(sid, tm)
+    tm = int(trunc(sid[end] / 0.05)) #0.08 es la ventana mas grande de la serie.
+    ind = binning_dfa(sid, tm, 0.05)
+    #println(length(ind))
+    #println(ind[end])
+    #println(length(fu))
+    #println(length(si)"\t" length(fu))
+    fy = zeros(length(ind))
+    sx = zeros(length(ind))
+    for z = 1:length(ind) #estos son los arreglos finales
+        if ind[z] > ind[end] || ind[z] == 0 || ind[z] < 0; continue; end
+        fy[z] = fu[ind[z]]
+        sx[z] = si[ind[z]]
+    end
+    graficas = [sx fy] #la grafica que se exporta
+    lin = polyfits(sx[1:end],fy[1:end],1) #ajuste lineal a los puntos
+    return lin[2], graficas
+end
+##################################################################################################################################
+#Para una sola voz
+function dfa_calc(notas::Array{Float64,1}, temp::Array{Float64,1}, p::Int64)
+    tam = length(notas)
+    serie = zeros(tam)
+    #se integra la serie
+    #println(tam[2])
+    serie = integrate(notas)
+    graficas = Array{Float64, 2}
+    n = 4 #es el numero minimo de cajas
+    tmax = convert(Int,trunc(tam /n))
+    tmin = 6
+    si = zeros(tmax-tmin+1)
+    fu = zeros(tmax-tmin+1)
+    N = tam
+    for s = tmin:tmax
+        nu = convert(Int,trunc(tam[1] / s)) - 1 #se calcula cuantos bloques de s elementos pueden obtenerse
+        Fn = zeros(tam)
+        for k = 0:nu
+            block = serie[k * s + 1: k * s + s] #asigna los bloques de tamanio s al arreglo block
+            blockt = temp[k * s + 1: k* s + s]
+            coef1 = polyfits(blockt, block, 2) #se ajusta un polinomio al bloque
+            for j = 1:s #se resta el polinomio al bloque
+                Fn[k * s + j] = (block[j] - eval2(coef1[3],coef1[2],coef1[1],blockt[j]))
+            end
+        end
+        Fs = 0
+        for k = 1:N
+            Vn = Fn' #se transpone la matriz Fn para convertirla en un vector y asi usar la funcion dot
+            Fs += dot(Vn[1:end , k],Vn[1:end , k]) #se realiza el producto punto y se suma sobre todas las entradas
+        end
+        if p == 1
+            Fnn = sqrt(Fs/ N) #se calcula la funcion F(s)
+        else
+            Fnn = sqrt(Fs / N) / N
+        end
+        si[s-tmin+1] = log10(s)
+        fu[s-tmin+1] = log10(Fnn)
+        #println(s ," ", Fnn)
+    end
+    #writedlm("grafica.dat", [si fu], '\t')
+    sid = si - log10(tmin)
+    tm = int(trunc(sid[end] / 0.05)) #0.08 es la ventana mas grande de la serie.
+    ind = binning_dfa(sid, tm, 0.05)
     #println(length(ind))
     #println(ind[end])
     #println(length(fu))

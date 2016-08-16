@@ -7,7 +7,7 @@ function gaps_notas!(Voz::Array{Float64,2}, q::Float64) #La funcion toma de entr
       end
   end
 end
-
+#########################################################################################################################################################################
 function gaps_silencios!(Voz::Array{Float64,2}) # La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que puede haber entre los silencios y donde empiezan las notas
     sm = minimum(Voz[:,2]-Voz[:,1])
     for i = 1:(length(Voz[:,1])-1) #corrige los gaps que hay entre silencios y notas
@@ -22,7 +22,7 @@ function gaps_silencios!(Voz::Array{Float64,2}) # La funcion toma de entrada el 
         Voz[x,2] = Voz[x,2] + (sm - n)
     end
 end
-
+#################################################################################################################################################
 function min_voces(Voces::Array{Array{Float64,2},1}, ns::Int64) #la funcion regresa el minimo valor de duracion
     mins = Array(Float64,ns)
     for i = 1:ns
@@ -30,7 +30,7 @@ function min_voces(Voces::Array{Array{Float64,2},1}, ns::Int64) #la funcion regr
     end
     return minimum(mins)
 end
-
+################################################################################################################################################
 function max_tempo(Voces::Array{Array{Float64,2},1}, ns::Int64) #la funcion encuentra el tiempo maximo de termino de notas, es decir donde termina la pieza
     Tfinal = Array(Float64,ns)
     for i = 1:ns
@@ -38,7 +38,13 @@ function max_tempo(Voces::Array{Array{Float64,2},1}, ns::Int64) #la funcion encu
     end
     return maximum(Tfinal)
 end
-
+################################################################################################################################
+#La siguiente funcion corrige los numeros fraccionarios que existen en las Voces
+function rounding!(voces::Array{Array{Float64,2},1}, q::Float64)
+    nv = size(voces)[1]
+    for i =1:nv; voces[i][:,1] = ceil(voces[i][:,1] / q) ; voces[i][:,2] = ceil(voces[i][:,2] / q); end
+end
+#######################################################################################################################################
 function serie_notas(Voz::Array{Float64,2}, tmax::Int64) #construye la serie de tiempo teniendo como entrada el arreglo de inicio - final - voz
     serie = zeros(tmax)
     ini = Voz[:,1]
@@ -144,7 +150,33 @@ function note_vec(v::Array{Float64,2})
     return vec
 end
 #######################################################################################
-function gaps_ms(s::Array{Float64,2})
-    
-
+function csvtoserie(s::Array{Any,2})
+    nv = s[findlast(s[:,3], " Note_on_c"),1] - 1
+    voces = Array(Array{Float64,2},nv)
+    if findfirst(s[:,3], " Note_off_c") == 0
+        for i = 2:(nv+1)
+            ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
+            fin = findlast(s[s[:,1].==i,3], " Note_on_c")
+            #println(ini,'\t', fin)
+            voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:]))
+        end
+    else
+        for i = 2:(nv+1)
+            ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
+            fin = findlast(s[s[:,1].==i,3], " Note_off_c")
+            #println(ini,'\t', fin)
+            voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:]))
+        end
+    end
+    q = minimum(float64(voces[1][:,2] - voces[1][:,1]))[]
+    gaps_notas!(float64(voces[1]),q)
+    gaps_silencios!(float64(voces[1]))
+    rounding!(voces, q)
+    tmax = int(max_tempo(voces,nv))
+    series = zeros(tmax,nv+1)
+    series[:,1] = indice(tmax)
+    for i=2:(nv+1)
+        series[:,i] = serie_notas(voces[i-1],tmax)
+    end
+    return series
 end
