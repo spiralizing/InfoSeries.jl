@@ -203,7 +203,7 @@ function dfa_calc(notas::Array{Float64,2}, temp::Array{Float64,1}, p::Int64)
     end
     #writedlm("grafica.dat", [si fu], '\t')
     sid = si - log10(tmin)
-    tm = int(trunc(sid[end] / 0.05)) #0.08 es la ventana mas grande de la serie.
+    tm = round(Int,trunc(sid[end] / 0.05)) #0.08 es la ventana mas grande de la serie.
     ind = binning_dfa(sid, tm, 0.05)
     #println(length(ind))
     #println(ind[end])
@@ -262,7 +262,7 @@ function dfa_calc(notas::Array{Float64,1}, temp::Array{Float64,1}, p::Int64)
     end
     #writedlm("grafica.dat", [si fu], '\t')
     sid = si - log10(tmin)
-    tm = int(trunc(sid[end] / 0.05)) #0.08 es la ventana mas grande de la serie.
+    tm = round(Int,trunc(sid[end] / 0.05)) #0.08 es la ventana mas grande de la serie.
     ind = binning_dfa(sid, tm, 0.05)
     #println(length(ind))
     #println(ind[end])
@@ -278,4 +278,54 @@ function dfa_calc(notas::Array{Float64,1}, temp::Array{Float64,1}, p::Int64)
     graficas = [sx fy] #la grafica que se exporta
     lin = polyfits(sx[1:end],fy[1:end],1) #ajuste lineal a los puntos
     return lin[2], graficas
+end
+################################################################################################################################
+#root mean squared 1
+function rms(f::Array{Float64,1}, p::Array{Float64,1})
+    n = length(f)
+    s = 0
+    for i = 1:n
+        s += (f[i] - p[i]) ^ 2 / n
+    end
+    return sqrt(s)
+end
+
+###################################################################################################################################
+#La siguiente funcion calcula el numero de puntos en el cual hay un menor error en la desviacion estandar, d es el indice donde inicia
+function find_line(puntos::Array{Float64,2}, d::Int64)
+    n = size(puntos)[1]
+    rs = ones(n)
+    for i = d:n
+        f = zeros(i)
+        l = polyfits(puntos[1:i,1], puntos[1:i,2], 1)
+        for j = 1:i
+            f[j] = puntos[j,1] * l[2] + l[1]
+        end
+        rs[i] = rms(f, puntos[:,2])
+    end
+    return minimum(rs), indmin(rs)
+end
+######################################################################################################
+#La siguiente funcion es para identificar los crossover que hay en el dfa, tam = tamanio - 1 de la ventana, numero par!
+function find_crov(puntos::Array{Float64,2}, tam)
+    x = []
+    y = []
+    m = []
+    n = size(puntos)[1]
+    i = 1
+    while (i + tam) < n
+        f = zeros(tam+1)
+        l = polyfits(puntos[i:(i+tam),1], puntos[i:(i+tam),2], 1)
+        for j = 1:(tam+1)
+            f[j] = puntos[i+j-1] * l[2] + l[1]
+        end
+        push!(x, i + tam/2); push!(y, rms(f, puntos[i:(i+tam),2])); push!(m, l[2])
+        #println(i + tam/2,'\t', rms(f, puntos[i:(i+tam),2]))
+        i += 1
+    end
+    mn = zeros(length(m))
+    for i = 1:length(m)-1
+        mn[i+1] = abs(m[i+1] - m[i])/ m[i]
+    end
+    return [x y mn]
 end

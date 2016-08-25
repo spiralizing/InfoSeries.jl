@@ -168,11 +168,11 @@ function csvtoserie(s::Array{Any,2})
             voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:]))
         end
     end
-    q = minimum(float64(voces[1][:,2] - voces[1][:,1]))[]
-    gaps_notas!(float64(voces[1]),q)
-    gaps_silencios!(float64(voces[1]))
+    q = minimum(map(Float64,voces[1][:,2] - voces[1][:,1]))[]
+    gaps_notas!(map(Float64,voces[1]),q)
+    gaps_silencios!(map(Float64,voces[1]))
     rounding!(voces, q)
-    tmax = int(max_tempo(voces,nv))
+    tmax = round(Int,max_tempo(voces,nv))
     series = zeros(tmax,nv+1)
     series[:,1] = indice(tmax)
     for i=2:(nv+1)
