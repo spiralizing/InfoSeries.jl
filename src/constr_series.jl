@@ -151,24 +151,34 @@ function note_vec(v::Array{Float64,2})
 end
 #######################################################################################
 function csvtoserie(s::Array{Any,2})
+    mq = s[1,6]
     nv = s[findlast(s[:,3], " Note_on_c"),1] - 1
     voces = Array(Array{Float64,2},nv)
     if findfirst(s[:,3], " Note_off_c") == 0
         for i = 2:(nv+1)
-            ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
-            fin = findlast(s[s[:,1].==i,3], " Note_on_c")
+            b = s[s[:,1].==i,:]
+            #ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
+            #fin = findlast(s[s[:,1].==i,3], " Note_on_c")
             #println(ini,'\t', fin)
-            voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:]))
+            if size(b[b[:,3].==" Note_on_c", :])[1] == 0; continue; end
+            voces[i-1] = float(filt_vozcsv(b[b[:,3].==" Note_on_c", :]))
         end
     else
         for i = 2:(nv+1)
             ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
             fin = findlast(s[s[:,1].==i,3], " Note_off_c")
             #println(ini,'\t', fin)
+            if ini == 0 || fin == 0; continue; end
             voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:]))
         end
     end
+    voces = voces[map(x -> isdefined(voces, x ), 1:length(voces))]
+    filter!(x -> size(x)[1] != 0,voces)
+    nv = size(voces)[1]
     q = minimum(map(Float64,voces[1][:,2] - voces[1][:,1]))[]
+    if q == 0
+        q = sort(map(Float64,voces[1][:,2] - voces[1][:,1]))[3]
+    end
     gaps_notas!(map(Float64,voces[1]),q)
     gaps_silencios!(map(Float64,voces[1]))
     rounding!(voces, q)

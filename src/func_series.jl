@@ -164,9 +164,11 @@ function dfa_calc(notas::Array{Float64,2}, temp::Array{Float64,1}, p::Int64)
     serie = zeros(tam[1], tam[2])
     #se integra la serie
     #println(tam[2])
+    println("Passed! flag 0")
     for i = 1:tam[2]
         serie[:,i] = integrate(notas[:,i])
     end
+    println("Passed! flag 1")
     graficas = Array{Float64, 2}
     n = 4 #es el numero minimo de cajas
     tmax = convert(Int,trunc(tam[1] /n))
@@ -201,6 +203,7 @@ function dfa_calc(notas::Array{Float64,2}, temp::Array{Float64,1}, p::Int64)
         fu[s-tmin+1] = log10(Fnn)
         #println(s ," ", Fnn)
     end
+    println("Paseed! flag 2")
     #writedlm("grafica.dat", [si fu], '\t')
     sid = si - log10(tmin)
     tm = round(Int,trunc(sid[end] / 0.05)) #0.08 es la ventana mas grande de la serie.
@@ -216,6 +219,7 @@ function dfa_calc(notas::Array{Float64,2}, temp::Array{Float64,1}, p::Int64)
         fy[z] = fu[ind[z]]
         sx[z] = si[ind[z]]
     end
+    println("Passed! flag 3")
     graficas = [sx fy] #la grafica que se exporta
     lin = polyfits(sx[1:end],fy[1:end],1) #ajuste lineal a los puntos
     return lin[2], graficas
@@ -235,6 +239,7 @@ function dfa_calc(notas::Array{Float64,1}, temp::Array{Float64,1}, p::Int64)
     si = zeros(tmax-tmin+1)
     fu = zeros(tmax-tmin+1)
     N = tam
+    println("Passed flag 0 dfa1")
     for s = tmin:tmax
         nu = convert(Int,trunc(tam[1] / s)) - 1 #se calcula cuantos bloques de s elementos pueden obtenerse
         Fn = zeros(tam)
