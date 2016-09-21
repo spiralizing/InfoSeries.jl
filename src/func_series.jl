@@ -316,21 +316,39 @@ function find_crov(puntos::Array{Float64,2}, tam)
     x = []
     y = []
     m = []
+    z = []
     n = size(puntos)[1]
     i = 1
     while (i + tam) < n
         f = zeros(tam+1)
+        f2 = zeros(tam+3)
         l = polyfits(puntos[i:(i+tam),1], puntos[i:(i+tam),2], 1)
         for j = 1:(tam+1)
             f[j] = puntos[i+j-1] * l[2] + l[1]
         end
-        push!(x, i + tam/2); push!(y, rms(f, puntos[i:(i+tam),2])); push!(m, l[2])
+        push!(x, i + tam/2); push!(y, rms(f, puntos[i:(i+tam),2])); push!(m, l[2]);
+        if i == 1
+            for j = 1:(tam+3)
+                f2[j] = puntos[i+j-1] * l[2] + l[1]
+            end
+            push!(z,rms(f2, puntos[i:(i+tam+2),2]))
+        elseif (i+tam) < n-1
+            for j = 1:(tam+3)
+                f2[j] = puntos[i+j-2] * l[2] + l[1]
+            end
+            push!(z, rms(f2, puntos[(i-1):(i+tam+1),2]))
+        else
+            for j = 1:(tam+3)
+                f2[j] = puntos[i+j-3] * l[2] + l[1]
+            end
+            push!(z,rms(f2, puntos[(i-2):(i+tam),2]))
+        end
         #println(i + tam/2,'\t', rms(f, puntos[i:(i+tam),2]))
         i += 1
     end
     mn = zeros(length(m))
     for i = 1:length(m)-1
-        mn[i+1] = abs(m[i+1] - m[i])/ m[i]
+        mn[i+1] = abs(m[i+1] - m[i])/ abs(m[i])
     end
-    return [x y mn]
+    return [x y z mn]
 end
