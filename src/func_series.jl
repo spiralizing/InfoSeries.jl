@@ -284,6 +284,72 @@ function dfa_calc(notas::Array{Float64,1}, temp::Array{Float64,1}, p::Int64)
     lin = polyfits(sx[1:end],fy[1:end],1) #ajuste lineal a los puntos
     return lin[2], graficas
 end
+#############################################################################################################
+#El siguiente programa calcula el dfa modificado (signos y magnitudes)
+function dfamod_calc(notas::Array{Float64,2}, temp::Array{Float64,1})
+    tam = size(notas)
+    incserie = zeros(tam[1],tam[2])
+    sgnserie = zeros(tam[1],tam[2])
+    magserie = zeros(tam[1],tam[2])
+    graficas = Array(Array{Float64, 2}, 2) #es el arreglo de graficas
+    #se necesita construir primero la serie descompuesta de magnitudes y signos
+    #para esto, el metodo de ashkenazy sugiere primero asegurar que la serie
+    #de incrementos este anticorrelacionada (α < 0.5)
+    #se construye la serie de incrementos ΔX
+    for k = 1:tam[2]
+        incserie[:,k] = increment_serie(notas[:,k])
+    end
+    #se calcula el nDFA-2 de la serie de incrementos
+    # si α > 0.5 se diferencia la serie hasta que α < 0.5
+    al = dfa_calc(incserie, temp, 1)
+    while al[1] > 0.5
+
+        for k = 1:tam[2]
+    	    incserie[:,k] = differ_serie(incserie[:,k])
+
+        end
+
+        al = dfa_calc(incserie, temp, 1)
+    end
+    #una vez tenida la serie de incrementos anticorrelacionada
+    #se descompone en magnitudes y signos
+    for k = 1:tam[2]
+        magserie[:,k] = magnitude_serie(incserie[:,k])
+        sgnserie[:,k] = sign_serie(incserie[:,k])
+    end
+
+    graficas[1] = dfa_calc(magserie, temp, 0)[2]
+    graficas[2] = dfa_calc(sgnserie, temp, 0)[2]
+    return graficas
+end
+#El siguiente programa calcula el dfa modificado (signos y magnitudes)
+function dfamod_calc(notas::Array{Float64,1}, temp::Array{Float64,1})
+    tam = length(notas)
+    incserie = zeros(tam)
+    sgnserie = zeros(tam)
+    magserie = zeros(tam)
+    graficas = Array(Array{Float64, 2}, 2) #es el arreglo de graficas
+    #se necesita construir primero la serie descompuesta de magnitudes y signos
+    #para esto, el metodo de ashkenazy sugiere primero asegurar que la serie
+    #de incrementos este anticorrelacionada (α < 0.5)
+    #se construye la serie de incrementos ΔX
+    incserie = increment_serie(notas)
+    #se calcula el nDFA-2 de la serie de incrementos
+    # si α > 0.5 se diferencia la serie hasta que α < 0.5
+    al = dfa_calc(incserie, temp, 1)
+    while al[1] > 0.5
+        incserie = differ_serie(incserie)
+        al = dfa_calc(incserie, temp, 1)
+    end
+    #una vez tenida la serie de incrementos anticorrelacionada
+    #se descompone en magnitudes y signos
+    magserie = magnitude_serie(incserie)
+    sgnserie = sign_serie(incserie)
+
+    graficas[1] = dfa_calc(magserie, temp, 0)[2]
+    graficas[2] = dfa_calc(sgnserie, temp, 0)[2]
+    return graficas
+end
 ################################################################################################################################
 #root mean squared 1
 function rms(f::Array{Float64,1}, p::Array{Float64,1})
