@@ -8,8 +8,8 @@ function gaps_notas!(Voz::Array{Float64,2}, q::Float64) #La funcion toma de entr
   end
 end
 #########################################################################################################################################################################
-function gaps_silencios!(Voz::Array{Float64,2}) # La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que puede haber entre los silencios y donde empiezan las notas
-    sm = minimum(Voz[:,2]-Voz[:,1])
+function gaps_silencios!(Voz::Array{Float64,2},q) # La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que puede haber entre los silencios y donde empiezan las notas
+    sm = q
     for i = 1:(length(Voz[:,1])-1) #corrige los gaps que hay entre silencios y notas
         m = mod(Voz[i,2] - Voz[i+1,1],sm)
         if m > 0
@@ -175,13 +175,13 @@ function csvtoserie(s::Array{Any,2})
     voces = voces[map(x -> isdefined(voces, x ), 1:length(voces))]
     filter!(x -> size(x)[1] != 0,voces)
     nv = size(voces)[1]
-    q = minimum(map(Float64,voces[1][:,2] - voces[1][:,1]))[]
-    if q == 0
-        q = sort(map(Float64,voces[1][:,2] - voces[1][:,1]))[3]
-    end
+    voces
+    nz = voces[1][:,2] - voces[1][:,1]
+    q = mq / minimum(nz[find(nz)])
     gaps_notas!(map(Float64,voces[1]),q)
-    gaps_silencios!(map(Float64,voces[1]))
+    gaps_silencios!(map(Float64,voces[1]),q)
     rounding!(voces, q)
+    voces
     tmax = round(Int,max_tempo(voces,nv))
     series = zeros(tmax,nv+1)
     series[:,1] = indice(tmax)
