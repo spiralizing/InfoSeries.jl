@@ -23,10 +23,12 @@ function gaps_silencios!(Voz::Array{Float64,2},q) # La funcion toma de entrada e
     end
 end
 #################################################################################################################################################
-function min_voces(Voces::Array{Array{Float64,2},1}, ns::Int64) #la funcion regresa el minimo valor de duracion
+function min_voces(Voces::Array{Array{Float64,2},1}, div::Float64) #la funcion regresa el minimo valor de duracion
+    ns = size(Voces)[1]
     mins = Array(Float64,ns)
     for i = 1:ns
-        mins[i] = minimum(Voces[i][:,2] - Voces[i][:,1])
+        dif = filter(x->x >= div,Voces[i][:,2] - Voces[i][:,1])
+        mins[i] = minimum(dif[find(dif)])
     end
     return minimum(mins)
 end
@@ -175,13 +177,10 @@ function csvtoserie(s::Array{Any,2})
     voces = voces[map(x -> isdefined(voces, x ), 1:length(voces))]
     filter!(x -> size(x)[1] != 0,voces)
     nv = size(voces)[1]
-    voces
-    nz = voces[1][:,2] - voces[1][:,1]
-    q = mq / minimum(nz[find(nz)])
+    q = mq / round(Int, mq / min_voces(voces, mq / 16))
     gaps_notas!(map(Float64,voces[1]),q)
     gaps_silencios!(map(Float64,voces[1]),q)
     rounding!(voces, q)
-    voces
     tmax = round(Int,max_tempo(voces,nv))
     series = zeros(tmax,nv+1)
     series[:,1] = indice(tmax)
