@@ -418,3 +418,33 @@ function find_crov(puntos::Array{Float64,2}, tam)
     end
     return [x y z mn]
 end
+###########################################################################################################
+function fast_fourier(s::Array{Float64,1})
+    ind = log10(1:length(s))
+    tam = length(s)
+    f = log10(abs2(fft(s)))
+    n = Int64(length(f) / 2)
+    tm = floor(Int64, (ind[n]-ind[10])/ 0.03)
+    idx = append!(collect(1:11),binning_dfa(ind[11:n], tm, 0.05) + 11)
+    fo = Array(Float64,length(idx))
+    indo = Array(Float64,length(idx))
+    for i = 1:length(idx)
+    fo[i] = f[idx[i]]
+    indo[i] = ind[idx[i]]
+    end
+    return [indo fo]
+end
+#################################################################################################################
+function tras_serie!(s::Array{Float64,2})
+    mi = zeros(size(s)[2])
+    for i = 1:(size(s)[2]-1)
+        mi[i] = minimum(filter(x -> x!=0, s[:,i+1]))-1
+    end
+    for i = 1:size(s)[1]
+        for j = 2:size(s)[2]
+            if s[i,j] == 0; continue; end
+            s[i,j] = s[i,j]-mi[j-1]
+        end
+    end
+    return s
+end
