@@ -152,7 +152,8 @@ function note_vec(v::Array{Float64,2})
     return vec
 end
 #######################################################################################
-function csvtoserie(s::Array{Any,2})
+function csvtoserie(s::Array{Any,2}, sd::Int64)
+    #sd is the subdivision, had to correct it
     mq = s[1,6]
     nv = s[findlast(s[:,3], " Note_on_c"),1] - 1
     voces = Array(Array{Float64,2},nv)
@@ -177,7 +178,7 @@ function csvtoserie(s::Array{Any,2})
     voces = voces[map(x -> isdefined(voces, x ), 1:length(voces))]
     filter!(x -> size(x)[1] != 0,voces)
     nv = size(voces)[1]
-    q = mq / round(Int, mq / min_voces(voces, mq / 16))
+    q = mq/ round(Int, mq / min_voces(voces, mq / sd))
     gaps_notas!(map(Float64,voces[1]),q)
     gaps_silencios!(map(Float64,voces[1]),q)
     rounding!(voces, q)
