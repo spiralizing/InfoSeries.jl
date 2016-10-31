@@ -179,8 +179,10 @@ function csvtoserie(s::Array{Any,2}, sd::Int64)
     filter!(x -> size(x)[1] != 0,voces)
     nv = size(voces)[1]
     q = mq/ round(Int, mq / min_voces(voces, mq / sd))
-    gaps_notas!(map(Float64,voces[1]),q)
-    gaps_silencios!(map(Float64,voces[1]),q)
+    for i = 1:nv
+      gaps_notas!(map(Float64,voces[i]),q)
+      gaps_silencios!(map(Float64,voces[i]),q)
+    end
     rounding!(voces, q)
     tmax = round(Int,max_tempo(voces,nv))
     series = zeros(tmax,nv+1)
