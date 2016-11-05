@@ -154,7 +154,7 @@ end
 #######################################################################################
 function csvtoserie(s::Array{Any,2}, sd::Int64)
     #sd is the subdivision, had to correct it
-    mq = s[1,6]
+    mq = s[1,6] #quarter of a note
     nv = s[findlast(s[:,3], " Note_on_c"),1] - 1
     voces = Array(Array{Float64,2},nv)
     if findfirst(s[:,3], " Note_off_c") == 0
