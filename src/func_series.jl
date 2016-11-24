@@ -448,3 +448,18 @@ function tras_serie!(s::Array{Float64,2})
     end
     return s
 end
+########################################################################################
+function trasup_serie!(s::Array{Float64,2},s2::Array{Floaot64,2}) #mueve una serie a la altura original, se toma como referencia la serie original
+    mi = zeros(size(s)[2])
+    for i = 1:(size(s)[2]-1)
+        mi[i] = minimum(filter(x -> x!=0, s2[:,i+1]))-1
+    end
+    for i = 1:size(s)[1]
+        for j = 2:size(s)[2]
+            if s[i,j] == 0; continue; end
+            s[i,j] = s[i,j]+mi[j-1]
+        end
+    end
+    return s
+end
+######################################################################################
