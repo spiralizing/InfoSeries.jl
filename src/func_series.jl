@@ -463,3 +463,13 @@ function trasup_serie!(s::Array{Float64,2},s2::Array{Float64,2}) #mueve una seri
     return s
 end
 ######################################################################################
+function slopes(s::Array{Float64,2}) # calcula la serie de pendientes a puntos vecinos.
+    n = size(s)[1]
+    m = zeros(n)
+    m[1] = (s[2,2] - s[1,2])/(s[2,1] - s[1,1]) #se hacen los extremos
+    m[n] = (s[n,2] - s[n-1,2])/(s[n,1] - s[n-1,1])
+    for i = 2:(n-1)
+        m[i] = (s[i+1,2] - s[i,2])/(s[i+1,1] - s[i,1])
+    end
+    return m
+end
