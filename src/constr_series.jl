@@ -192,3 +192,21 @@ function csvtoserie(s::Array{Any,2}, sd::Int64)
     end
     return series
 end
+#############################################################################
+function consonance_series(s::Array{Float64,2})
+    nv = size(s)[2]
+    n = size(s)[1]
+    CR = [1,11,8,6,4,3,12,2,7,5,9,10] #este es el rango de consonancia
+    cs = zeros(n)
+    for k = 1:n
+        c = 0
+        for i = 2:(nv-1)
+            for j = (i+1):nv
+                cn = CR[Int(mod(abs(s[k,i] - s[k,j]),12) + 1)]
+                if cn > c; c = cn; end
+            end
+        end
+        cs[k] = c
+    end
+    return [s[:,1] cs]
+end
