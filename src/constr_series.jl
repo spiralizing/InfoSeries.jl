@@ -202,6 +202,7 @@ function consonance_series(s::Array{Float64,2})
         c = 0
         for i = 2:(nv-1)
             for j = (i+1):nv
+                if s[k,i] == 0 || s[k,j] == 0; continue; end #aqui asegura de dejar en cero la consonancia entre una nota y nada mas
                 cn = CR[Int(mod(abs(s[k,i] - s[k,j]),12) + 1)]
                 if cn > c; c = cn; end
             end
