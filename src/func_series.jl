@@ -473,3 +473,14 @@ function slopes(s::Array{Float64,2}) # calcula la serie de pendientes a puntos v
     end
     return m
 end
+#####################################################################################################################
+#La siguiente funcion hace una simple resta entre la funcion de fluctuaciones del DFA F(s) y la recta con pendiente 0.5 correspondiente a ruido descorrelacionado.
+function dif_ruidor(s::Array{Float64,2})
+    n = size(s)[1]
+    dif = zeros(n)
+    b = s[1,2] - s[1,1] * 0.5
+    for i = 1:n
+        dif[i] = s[i,2] - (0.5 * s[i,1] + b)
+    end
+    return dif
+end
