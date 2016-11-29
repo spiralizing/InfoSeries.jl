@@ -484,3 +484,12 @@ function dif_ruidor(s::Array{Float64,2})
     end
     return dif
 end
+####################################################################################################
+function rand_series(s::Array{Float64,2})
+    out = zeros(size(s)[1],size(s)[2])
+    out[:,1] = s[:,1]
+    for i in 2:size(s)[2]
+        out[:,i] = rand(s[:,i])
+    end
+    return out
+end
