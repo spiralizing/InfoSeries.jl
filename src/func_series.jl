@@ -485,11 +485,11 @@ function dif_ruidor(s::Array{Float64,2})
     return dif
 end
 ####################################################################################################
-function rand_series(s::Array{Float64,2})
+function rand_series(s::Array{Float64,2}) #este programa hace un random shuffle sobre cada una de las voces de una serie.
     out = zeros(size(s)[1],size(s)[2])
     out[:,1] = s[:,1]
     for i in 2:size(s)[2]
-        out[:,i] = rand(s[:,i])
+        out[:,i] = shuffle(s[:,i])
     end
     return out
 end
