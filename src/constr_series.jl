@@ -1,14 +1,19 @@
 #Se definen las funciones
-function gaps_notas!(Voz::Array{Float64,2}, q::Float64) #La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que hay entre notas que terminan y que empiezan
-  for i = 1:(length(Voz[:,1])-1)
-      m = abs(Voz[i,2] - Voz[i+1,1])
-      if m < q
-          Voz[i,2] = Voz[i+1,1]
-      end
-  end
+function gaps_notas!(s::Array{Array{Float64,2},1}, q::Float64) #La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que hay entre notas que terminan y que empiezan
+    dim = size(s)
+    for v in s
+        for i = 1:(dim[1]-1)
+            m = abs(v[i,2] - v[i+1,1])
+            #printlrintln(Voz[i,2],'\t',Voz[i+1,1],'\t',m)
+            if m < q
+                Voz[i,2] = Voz[i+1,1]
+                #println(Voz[i,2],'\t', Voz[i+1,1])
+            end
+        end
+  return Voz
 end
 #########################################################################################################################################################################
-function gaps_silencios!(Voz::Array{Float64,2},q) # La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que puede haber entre los silencios y donde empiezan las notas
+function gaps_silencios!(s::Array{Array{Float64,2},1},q::Float64) # La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que puede haber entre los silencios y donde empiezan las notas
     sm = q
     for i = 1:(length(Voz[:,1])-1) #corrige los gaps que hay entre silencios y notas
         m = mod(Voz[i,2] - Voz[i+1,1],sm)
@@ -21,6 +26,7 @@ function gaps_silencios!(Voz::Array{Float64,2},q) # La funcion toma de entrada e
     if n > 0
         Voz[x,2] = Voz[x,2] + (sm - n)
     end
+    return Voz
 end
 #################################################################################################################################################
 function min_voces(Voces::Array{Array{Float64,2},1}, div::Float64) #la funcion regresa el minimo valor de duracion
