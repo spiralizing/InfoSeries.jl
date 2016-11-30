@@ -1,32 +1,32 @@
 #Se definen las funciones
 function gaps_notas!(s::Array{Array{Float64,2},1}, q::Float64) #La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que hay entre notas que terminan y que empiezan
-    dim = size(s)
     for v in s
-        for i = 1:(dim[1]-1)
+        for i = 1:(size(v)[1]-1)
             m = abs(v[i,2] - v[i+1,1])
             #printlrintln(Voz[i,2],'\t',Voz[i+1,1],'\t',m)
             if m < q
-                Voz[i,2] = Voz[i+1,1]
+                v[i,2] = v[i+1,1]
                 #println(Voz[i,2],'\t', Voz[i+1,1])
             end
         end
-  return Voz
+      end
 end
 #########################################################################################################################################################################
 function gaps_silencios!(s::Array{Array{Float64,2},1},q::Float64) # La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que puede haber entre los silencios y donde empiezan las notas
     sm = q
-    for i = 1:(length(Voz[:,1])-1) #corrige los gaps que hay entre silencios y notas
-        m = mod(Voz[i,2] - Voz[i+1,1],sm)
-        if m > 0
-            Voz[i,2] = Voz[i,2] + (sm - m)
+    for v in s
+        for i = 1:(size(v)[1]-1) #corrige los gaps que hay entre silencios y notas
+            m = mod(v[i,2] - v[i+1,1],sm)
+            if m > 0
+                v[i,2] = v[i,2] + (sm - m)
+            end
+        end
+        x = length(v[:,1])
+        n = mod(v[x,2] - v[x,1], sm) #aqui se corrige la ultima nota del arrelgo
+        if n > 0
+            v[x,2] = v[x,2] + (sm - n)
         end
     end
-    x = length(Voz[:,1])
-    n = mod(Voz[x,2] - Voz[x,1], sm) #aqui se corrige la ultima nota del arrelgo
-    if n > 0
-        Voz[x,2] = Voz[x,2] + (sm - n)
-    end
-    return Voz
 end
 #################################################################################################################################################
 function min_voces(Voces::Array{Array{Float64,2},1}, div::Float64) #la funcion regresa el minimo valor de duracion
@@ -185,10 +185,8 @@ function csvtoserie(s::Array{Any,2}, sd::Int64)
     filter!(x -> size(x)[1] != 0,voces)
     nv = size(voces)[1]
     q = mq/ round(Int, mq / min_voces(voces, mq / sd))
-    for i = 1:nv
-      gaps_notas!(map(Float64,voces[i]),q)
-      gaps_silencios!(map(Float64,voces[i]),q)
-    end
+    gaps_notas!(voces,q)
+    gaps_silencios!(voces,q)
     rounding!(voces, q)
     tmax = round(Int,max_tempo(voces,nv))
     series = zeros(tmax,nv+1)
