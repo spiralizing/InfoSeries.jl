@@ -423,14 +423,14 @@ function fast_fourier(s::Array{Float64,1})
     ind = log10(1:length(s))
     tam = length(s)
     f = log10(abs2(fft(s)))
-    n = Int64(length(f) / 2)
+    n = Int64(ceil(length(f) / 2))
     tm = floor(Int64, (ind[n]-ind[10])/ 0.03)
     idx = append!(collect(1:11),binning_dfa(ind[11:n], tm, 0.05) + 11)
     fo = Array(Float64,length(idx))
     indo = Array(Float64,length(idx))
     for i = 1:length(idx)
-    fo[i] = f[idx[i]]
-    indo[i] = ind[idx[i]]
+        fo[i] = f[idx[i]]
+        indo[i] = ind[idx[i]]
     end
     return [indo fo]
 end
