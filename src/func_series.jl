@@ -82,15 +82,39 @@ end
 ########################################################################################################################################
 #esta funcion hace un runnnig average de tamanio s en la serie, la ventana tiene
 #que ser un numero impar
-function run_avg(serie::Array{Float64}, s::Int64)
-    n = length(serie)
-    k = (s - 1) / 2
-    x = n - 2 * k
-    ra = Array(Float64, x)
+function mv_avg(serie::Array{Float64,2}, s::Int64)
+    n = length(serie[:,1])
+    k = Int((s - 1) / 2)
+    x = Int(n - 2 * k)
+    ma = zeros(x,2)
     for i = (k+1):(n - k)
-        ra[i-k] = mean(serie[(i-k):(i+k)])
+        ma[i-k,1] = serie[i,1]
+        ma[i-k,2] = mean(serie[(i-k):(i+k),2])
     end
+    return ma
 end
+function mv_avg(serie::Array{Float64,1}, s::Int64)
+    n = length(serie)
+    k = Int((s - 1) / 2)
+    x = Int(n - 2 * k)
+    ma = zeros(x)
+    for i = (k+1):(n - k)
+        ma[i-k] = mean(serie[(i-k):(i+k)])
+    end
+    return ma
+end
+function mv_avg(s1::Array{Float64,1},s2::Array{Float64,1}, s::Int64)
+    n = length(s1)
+    k = Int((s - 1) / 2)
+    x = Int(n - 2 * k)
+    ma = zeros(x,2)
+    for i = (k+1):(n - k)
+        ma[i-k,1] = s1[i]
+        ma[i-k,2] = mean(s2[(i-k):(i+k)])
+    end
+    return ma
+end
+
 #################################################################################################
 #la siguiente funcion hace un tipo binning sobre los datos con ventanas de tamanio m
 #regresa un arreglo de menor tamanio al original pero distribuido homogeneamente
