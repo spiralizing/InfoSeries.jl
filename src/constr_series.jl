@@ -215,3 +215,27 @@ function consonance_series(s::Array{Float64,2})
     end
     return [s[:,1] cs]
 end
+################################################################################
+function note_serie(s::Array{Any,2})
+    nv = s[findlast(s[:,3], " Note_on_c"),1] - 1
+    voces = Array(Array{Float64,2},nv)
+    if findfirst(s[:,3], " Note_off_c") == 0
+        for i = 2:(nv+1)
+            b = s[s[:,1].==i,:]
+            #ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
+            #fin = findlast(s[s[:,1].==i,3], " Note_on_c")
+            #println(ini,'\t', fin)
+            if size(b[b[:,3].==" Note_on_c", :])[1] == 0; continue; end
+            voces[i-1] = float(filt_vozcsv(b[b[:,3].==" Note_on_c", :]))
+        end
+    else
+        for i = 2:(nv+1)
+            ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
+            fin = findlast(s[s[:,1].==i,3], " Note_off_c")
+            #println(ini,'\t', fin)
+            if ini == 0 || fin == 0; continue; end
+            voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:]))
+        end
+    end
+    return voces
+end

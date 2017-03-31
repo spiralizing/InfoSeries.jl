@@ -24,7 +24,21 @@ function prob_marg(serie::Array{AbstractString,1})
     end
     return M
 end
-
+################################################################################
+#next function returns the rank frequency distribution of an array of "words" of notes
+function rank_freq(serie::Array{Any,1})
+    tam = length(serie)
+    M = Dict{Any,Int64}()
+    for i = 1:tam
+        M[serie[i]] = get(M, serie[i], 0) + 1
+    end
+    dist = sort(collect(M), by = tuple -> last(tuple), rev=true)
+    rf = Array{Any}(length(dist),3)
+    for i = 1:length(dist)
+        rf[i,1] = i; rf[i,2] = dist[i][1]; rf[i,3] = dist[i][2];
+    end
+    return rf
+end
 ###############################################################################
 #esta funcion calcula la probabilidad conjunta de dos variables en dos series
 #, separadas por una distancia d
