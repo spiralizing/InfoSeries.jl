@@ -239,3 +239,12 @@ function note_serie(s::Array{Any,2})
     end
     return voces
 end
+#
+function interval_serie(s::Array{Array{Float64,2},1})
+    nv = size(s)[1]
+    interval = Array(Array{Any,1},nv)
+    for i = 1:nv
+        interval[i] = diff(s[i][:,3])
+    end
+    return interval
+end
