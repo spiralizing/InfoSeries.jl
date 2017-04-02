@@ -248,3 +248,13 @@ function interval_serie(s::Array{Array{Float64,2},1})
     end
     return interval
 end
+function interval_serie(s::Array{Array{Float64,2},1},n::Int64)
+    nv = size(s)[1]
+    interval = Array(Array{Any,1},nv)
+    for i = 1:nv
+        if n == 1
+            interval[i] = shuffle(diff(s[i][:,3]))
+        end
+    end
+    return interval
+end
