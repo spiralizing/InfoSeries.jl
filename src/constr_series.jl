@@ -253,7 +253,7 @@ function interval_serie(s::Array{Array{Float64,2},1},n::Int64)
     interval = Array(Array{Any,1},nv)
     for i = 1:nv
         if n == 1
-            interval[i] = shuffle(diff(s[i][:,3]))
+            interval[i] = diff(shuffle(s[i][:,3]))
         end
     end
     return interval
