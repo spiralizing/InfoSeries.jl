@@ -517,3 +517,12 @@ function rand_series(s::Array{Float64,2}) #este programa hace un random shuffle 
     end
     return out
 end
+####################################################################################################
+function R_squared(s::Array{Float64,2},y::Function)
+  n = size(s)[1]
+  p = mean(s[:,2])
+  σ = sum([(s[i,2]-p)^2 for i=1:n])
+  e = sum([(s[i,2]-y(s[i,1]))^2 for i=1:n])
+  R² = 1 - σ / e
+  return R²
+end
