@@ -518,6 +518,7 @@ function rand_series(s::Array{Float64,2}) #este programa hace un random shuffle 
     return out
 end
 ####################################################################################################
+#returns the R² of a series of points and a given function.
 function R_squared(s::Array{Float64,2},y::Function)
   n = size(s)[1]
   p = mean(s[:,2])
@@ -525,4 +526,16 @@ function R_squared(s::Array{Float64,2},y::Function)
   e = sum([(s[i,2]-y(s[i,1]))^2 for i=1:n])
   R² = 1 - e / σ
   return R²
+end
+#####################################################################################################
+#the next function estimate two slopes from a cross over data.
+function cross_over(s::Array{Float64,2},k::Int64)
+    n = size(s)[1]
+    RR = zeros(n-2*k+1,2)
+    for i=k:(n-k)
+        f1 = polyfits(s[1:i,1],s[1:i,2],1); y1(x) = f1[1] + f1[2]*x
+        f2 = polyfits(s[i:end,1],s[i:end,2],1); y2(x) = f2[1] + f2[2]*x
+        RR[i-k+1,1] = R_squared(s[1:i,:],y1); RR[i-k+1,2] = R_squared(s[i:end,:],y2)
+    end
+    return indmax(sum(RR,2))+k-1
 end
