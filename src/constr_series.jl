@@ -196,7 +196,90 @@ function csvtoserie(s::Array{Any,2}, sd::Int64)
     end
     return series
 end
+##############################################################################
+function csvtointervs(s::Array{Any,2}, sd::Int64)
+    #sd is the subdivision, had to correct it
+    mq = s[1,6] #quarter of a note
+    nv = s[findlast(s[:,3], " Note_on_c"),1] - 1
+    voces = Array(Array{Float64,2},nv)
+    if findfirst(s[:,3], " Note_off_c") == 0
+        for i = 2:(nv+1)
+            b = s[s[:,1].==i,:]
+            #ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
+            #fin = findlast(s[s[:,1].==i,3], " Note_on_c")
+            #println(ini,'\t', fin)
+            if size(b[b[:,3].==" Note_on_c", :])[1] == 0; continue; end
+            voces[i-1] = float(filt_vozcsv(b[b[:,3].==" Note_on_c", :]))
+        end
+    else
+        for i = 2:(nv+1)
+            ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
+            fin = findlast(s[s[:,1].==i,3], " Note_off_c")
+            #println(ini,'\t', fin)
+            if ini == 0 || fin == 0; continue; end
+            voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:]))
+        end
+    end
+    voces = voces[map(x -> isdefined(voces, x ), 1:length(voces))]
+    filter!(x -> size(x)[1] != 0,voces)
+    nv = size(voces)[1]
+    q = mq/ round(Int, mq / min_voces(voces, mq / sd))
+    gaps_notas!(voces,q)
+    gaps_silencios!(voces,q)
+    rounding!(voces, q)
+    inters = Array(Array{Any,1},nv)
+    for i=1:(nv)
+        inters[i] = inter_symbol(voces[i])
+    end
+    return inters
+end
 #############################################################################
+function inter_symbol(s::Array{Float64,2})
+    nuevas = Array{Float64,1}()
+    if s[1,1] != 0.0; push!(nuevas, 1000.0); end
+    push!(nuevas,s[1,3])
+    for i = 1:(size(s)[1]-1)
+        if s[i,2] != s[i+1,1]
+            push!(nuevas,1000.0)
+        else
+            push!(nuevas,s[i+1,3])
+        end
+    end
+    inters = Array{Float64,1}()
+    for i = 1:(length(nuevas)-1)
+        if nuevas[i] > 500; push!(inters, nuevas[i])
+        elseif nuevas[i+1] > 500; continue;
+        else
+            push!(inters, nuevas[i+1]-nuevas[i])
+        end
+    end
+    return convert(Array{Any,1},inters)
+end
+###############################################################################
+function rank_series(rf::Array{Any,2}, s::Array{Any,1})
+    inte=convert(Array{Float64,1},s)
+    rs = zeros(length(s))
+    for i = 1:size(rf)[1]
+        indx = findin(inte,rf[i,2])
+        for j = 1:length(indx)
+            rs[indx[j]] = i
+        end
+    end
+    return rs
+end
+################################################################################
+function red_hv(rf::Array{Any,2},rs::Array{Float64,1},am::Array{Float64,2})
+    n = size(rf)[1]
+    rsn = convert(Array{Int64,1}, rs)
+    red_m = zeros(n,n)
+    for i = 1:size(am)[1]
+        for j = 1:size(am)[2]
+            if am[i,j] == 1; red_m[rsn[i],rsn[j]] = 1; end
+        end
+    end
+    return red_m
+end
+###############################################################################
 function consonance_series(s::Array{Float64,2})
     nv = size(s)[2]
     n = size(s)[1]
@@ -257,4 +340,60 @@ function interval_serie(s::Array{Array{Float64,2},1},n::Int64)
         end
     end
     return interval
+end
+################################################################################
+#Next function will return the matrix of horizontal visibility graph
+function h_visibility(s::Array{Int64,1})
+    adj_mat = zeros(length(s),length(s))
+    for i=1:(length(s)-2)
+        adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
+        for j=(i+2):length(s)
+            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
+                adj_mat[i,j] = 1; adj_mat[j,i] = 1
+            end
+        end
+    end
+    adj_mat[end-1,end] = 1; adj_mat[end,end-1] = 1
+    return adj_mat
+end
+
+function h_visibility(s::Array{Float64,1})
+    adj_mat = zeros(length(s),length(s))
+    for i=1:(length(s)-2)
+        adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
+        for j=(i+2):length(s)
+            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
+                adj_mat[i,j] = 1; adj_mat[j,i] = 1
+            end
+        end
+    end
+    adj_mat[end-1,end] = 1; adj_mat[end,end-1] = 1
+    return adj_mat
+end
+function hd_visibility(s::Array{Int64,1})
+    adj_mat = zeros(length(s),length(s))
+    for i=1:(length(s)-2)
+        adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
+        for j=(i+2):length(s)
+            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
+                adj_mat[i,j] = 1;
+            end
+        end
+    end
+    adj_mat[end-1,end] = 1; adj_mat[end,end-1] = 1
+    return adj_mat
+end
+
+function hd_visibility(s::Array{Float64,1})
+    adj_mat = zeros(length(s),length(s))
+    for i=1:(length(s)-2)
+        adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
+        for j=(i+2):length(s)
+            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
+                adj_mat[i,j] = 1; 
+            end
+        end
+    end
+    adj_mat[end-1,end] = 1; adj_mat[end,end-1] = 1
+    return adj_mat
 end

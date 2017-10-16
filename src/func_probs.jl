@@ -318,3 +318,12 @@ function transfer(s1::Array{Float64}, s2::Array{Float64}, τ::Int64)
     end
     return tr
 end
+################################################################################
+#the next function estimates the shanon entropy of a given set of probabilites
+function sh_ent(p::Array{Float64,1})
+    ent = 0
+    for i = 1:length(p)
+        ent += p[i] * log10(p[i])
+    end
+    return -ent
+end
