@@ -323,7 +323,9 @@ end
 function sh_ent(p::Array{Float64,1})
     ent = 0
     for i = 1:length(p)
-        ent += p[i] * log10(p[i])
+        if p[i] == 0; continue; else
+            ent += p[i] * log10(p[i])
+        end
     end
     return -ent
 end

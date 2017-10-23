@@ -539,3 +539,45 @@ function cross_over(s::Array{Float64,2},k::Int64)
     end
     return indmax(sum(RR,2))+k-1
 end
+################################################################################################
+#this is the levenshtein distance between two characteres
+function leven(s, t)
+
+    length(s) == 0 && return length(t);
+    length(t) == 0 && return length(s);
+
+    s1 = s[2:end];
+    t1 = t[2:end];
+
+    return (s[1] == t[1]
+        ? leven(s1, t1)
+        : 1 + min(
+                leven(s1, t1),
+                leven(s,  t1),
+                leven(s1,  t)
+              )
+    );
+end
+################################################################################
+#next is the hamming distance modified.
+function ham_dist(s1::Array{Float64,1},s2::Array{Float64,1})
+    n = min(length(s1),length(s2))
+    d = abs(length(s1)-length(s2))
+    for i = 1:n
+        if s1[i] != s2[i]
+            d += 1
+        end
+    end
+    return d / max(length(s1),length(s2))
+end
+################################################################################
+function isinarray(s::Array{Float64,1}, v::Array{Array{Float64,1},1})
+    out = 0
+    for e in v
+        if ham_dist(s, e) == 0
+            out = 1
+            break
+        end
+    end
+    if out == 1; return true; else; return false; end
+end
