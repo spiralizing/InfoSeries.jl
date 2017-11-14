@@ -570,6 +570,24 @@ function ham_dist(s1::Array{Float64,1},s2::Array{Float64,1})
     end
     return d / max(length(s1),length(s2))
 end
+#next function is expected to give more importance to near neighbors
+#
+function ham_distexp(s1::Array{Float64,1}, s2::Array{Float64,1})
+    n = min(length(s1),length(s2))
+    d = 0
+    for i = 1:n
+        if s1[i] != s2[i]
+            d += 1 * exp(-(i-1)) #if
+        end
+    end
+    if length(s1) != length(s2)
+        for i = (n+1):max(length(s1),length(s2))
+            d += 1 * exp(-(i-1))
+        end
+    end
+    return d
+end
+
 ################################################################################
 function isinarray(s::Array{Float64,1}, v::Array{Array{Float64,1},1})
     out = 0
@@ -580,4 +598,77 @@ function isinarray(s::Array{Float64,1}, v::Array{Array{Float64,1},1})
         end
     end
     if out == 1; return true; else; return false; end
+end
+################################################################################
+#The next function is for the reduction of a horizontal visibility graph, by a
+#contextual criteria. The inputs are a rank frequency array (rank, value, freq)
+#a series (rank series), and the hvisibility matrix (nodes), and a parameter for the k-medoids
+#It needs the Clustering package for the k-medoids method.
+function reduce_hv(rf::Array{Any,2}, rs::Array{Float64,1}, adj_mat_d::Array{Float64,2}, pen::Float64)
+    oldstart = Array{Array{Float64,1},1}()
+    olds = Array{Array{Array{Float64,1},1},1}()
+    outs = Array{Clustering.KmedoidsResult,1}()
+
+    for i = 1:size(rf)[1]
+        submat = adj_mat_d[findin(rs, rf[i,1]),:]
+        push!(oldstart, findin(rs, rf[i,1]))
+        n = size(submat)[1]
+        dm = zeros(n,n)
+        old_ind = Array{Array{Float64,1},1}()
+        for j = 1:(n-1)
+            s1 = rs[find(x -> x==1, submat[j,:])]
+            push!(old_ind, find(x->x==1, submat[j,:]))
+            if isempty(s1)
+                continue
+            else
+                for k = (j+1):(n)
+                    s2 = rs[find(x -> x==1, submat[k,:])]
+                    if isempty(s2)
+                        continue
+                    end
+                    dm[j,k] = dm[k,j] = ham_distexp(s1,s2)
+                end
+            end  #here the hamming distances are estimated.
+        end
+        push!(old_ind, find(x -> x==1, submat[n,:]))
+        push!(olds, old_ind)
+        err = 4
+        k = 1
+        out = kmedoids(dm,k)
+        while err > pen
+            out = kmedoids(dm, k)
+            err = maximum(out.acosts)
+            k += 1
+        end
+        push!(outs, out)
+    end
+
+    rs_new = zeros(length(rs))
+    smed = 0
+    for i = 1:size(rf)[1]
+        nm = length(outs[i].medoids)
+        meds = outs[i].medoids
+        ass = outs[i].assignments
+        for j = 1:nm
+            ind_ass = find(x -> x == j,ass)
+            rs_new[map(Int64,oldstart[i][meds[j]])] = smed + j
+            for k = 1:length(ind_ass)
+                rs_new[map(Int64,oldstart[i][ind_ass[k]])] = smed + j
+            end
+        end
+        smed = smed + nm
+    end
+    rs_new = convert(Array{Int64,1},rs_new)
+    tn = maximum(rs_new)
+    new_mat = zeros(tn,tn)
+    for i = 1:size(rf)[1]
+        ind1 = convert(Array{Int64,1}, oldstart[i])
+        for j = 1:length(ind1)
+            ind2 = convert(Array{Int64,1}, olds[i][j])
+            for k = 1:length(ind2)
+                 new_mat[rs_new[ind1[j]],rs_new[ind2[k]]] = 1
+            end
+        end
+    end
+    return new_mat, rs_new
 end

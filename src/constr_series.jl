@@ -390,10 +390,63 @@ function hd_visibility(s::Array{Float64,1})
         adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
         for j=(i+2):length(s)
             if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
-                adj_mat[i,j] = 1; 
+                adj_mat[i,j] = 1;
             end
         end
     end
     adj_mat[end-1,end] = 1; adj_mat[end,end-1] = 1
     return adj_mat
+end
+################################################################################
+#next function constructs a series of blocks from a time series, by the criteria
+#of the HVG
+function hv_blocks(s::Array{Float64,1})
+    out = Array{Array{Float64,1},1}()
+    for i=1:(length(s)-1)
+        for j=(i+1):length(s)
+            if s[j] >= s[i]
+                push!(out,s[i:j])
+                break
+            elseif j == length(s)
+                push!(out,s[i:j])
+            end
+        end
+
+    end
+    return out
+end
+
+#################################################################################
+#Next function classifies blocks with the hamming distances and k-medoids method
+function group_blocks(b::Array{Array{Float64,1},1}, pen::Float64)
+    n = size(b)[1]
+    mat_d = zeros(n,n)
+    for i= 1:(n-1)
+        for j = (i+1):(n)
+            mat_d[i,j] = mat_d[j,i] = ham_distexp(b[i],b[j])
+        end
+    end
+
+    err = 4
+    k = 1
+    out = kmedoids(mat_d,k)
+    while err > pen
+        out = kmedoids(mat_d, k)
+        err = maximum(out.acosts)
+        k += 1
+    end
+    nm = length(out.medoids)
+    groups = Array{Array{Array{Float64,1},1},1}()
+    meds = out.medoids
+    ass = out.assignments
+    for i=1:nm
+        group = Array{Array{Float64},1}()
+        ind_ass = find(x->x==i, ass)
+        for j=1:length(ind_ass)
+            push!(group, b[ind_ass[j]])
+        end
+        push!(groups,group)
+    end
+    return groups
+
 end
