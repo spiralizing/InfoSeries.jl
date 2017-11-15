@@ -268,6 +268,18 @@ function rank_series(rf::Array{Any,2}, s::Array{Any,1})
     return rs
 end
 ################################################################################
+function rank_seriestxt(rf::Array{Any,2}, s::Array{AbstractString,1}, lt::Array{AbstractString,1})
+    rs = zeros(length(s))
+    for i = 1:length(s)
+        for k =1:length(lt)
+            if contains(s[i],lt[k])
+                rs[i] = k; break
+            end
+        end
+    end
+    return rs
+end
+################################################################################
 function red_hv(rf::Array{Any,2},rs::Array{Float64,1},am::Array{Float64,2})
     n = size(rf)[1]
     rsn = convert(Array{Int64,1}, rs)
