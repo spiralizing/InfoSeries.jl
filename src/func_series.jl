@@ -587,6 +587,7 @@ function ham_distexp(s1::Array{Float64,1}, s2::Array{Float64,1})
     end
     return d
 end
+################################################################################
 
 ################################################################################
 function isinarray(s::Array{Float64,1}, v::Array{Array{Float64,1},1})

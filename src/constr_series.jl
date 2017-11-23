@@ -431,6 +431,43 @@ end
 #################################################################################
 #Next function classifies blocks with the hamming distances and k-medoids method
 function group_blocks(b::Array{Array{Float64,1},1}, pen::Float64)
+    mx = maximum(map(length, b))
+    groups = Array{Array{Array{Float64,1},1},1}()
+    for l = 2:mx
+        bl = filter(x -> length(x) == l, b)
+        if isempty(bl); continue; end #checking for an empty array.
+        n = length(bl)
+        mat_d = zeros(n,n)
+        for i= 1:(n-1)
+            for j = (i+1):(n)
+                mat_d[i,j] = mat_d[j,i] = euclidean(bl[i],bl[j]) #estimating euclidean distances
+            end
+        end
+        err = 10
+        k = 1
+        out = kmedoids(mat_d,k)
+        while err > pen
+            out = kmedoids(mat_d, k)
+            err = maximum(out.acosts)
+            k += 1
+        end
+        nm = length(out.medoids)
+        meds = out.medoids
+        ass = out.assignments
+        for i=1:nm
+            group = Array{Array{Float64},1}()
+            ind_ass = find(x->x==i, ass)
+            for j=1:length(ind_ass)
+                push!(group, bl[ind_ass[j]])
+            end
+            push!(groups,group)
+        end
+    end
+    return groups
+
+end
+################################################################################
+function hgroup_blocks(b::Array{Array{Float64,1},1}, pen::Float64)
     n = size(b)[1]
     mat_d = zeros(n,n)
     for i= 1:(n-1)
@@ -438,7 +475,6 @@ function group_blocks(b::Array{Array{Float64,1},1}, pen::Float64)
             mat_d[i,j] = mat_d[j,i] = ham_distexp(b[i],b[j])
         end
     end
-
     err = 4
     k = 1
     out = kmedoids(mat_d,k)
@@ -460,5 +496,17 @@ function group_blocks(b::Array{Array{Float64,1},1}, pen::Float64)
         push!(groups,group)
     end
     return groups
-
+end
+################################################################################
+#next function returns the original values of the timeseries, given blocks of rank frequency.
+function rf_blocks(b::Array{Array{Float64,1},1}, rf::Array{Any,2})
+    bout = Array{Array{Float64,1},1}()
+    for i = 1:length(b)
+        b1 = Array{Float64,1}()
+        for j = 1:length(b[i])
+            push!(b1, rf[Int64(b[i][j]),2])
+        end
+        push!(bout, b1)
+    end
+    return bout
 end
