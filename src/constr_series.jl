@@ -256,7 +256,7 @@ function inter_symbol(s::Array{Float64,2})
     return convert(Array{Any,1},inters)
 end
 ###############################################################################
-function rank_series(rf::Array{Any,2}, s::Array{Any,1})
+function rank_series(rf, s)
     inte=convert(Array{Float64,1},s)
     rs = zeros(length(s))
     for i = 1:size(rf)[1]
@@ -426,6 +426,25 @@ function hv_blocks(s::Array{Float64,1})
 
     end
     return out
+end
+function hv_links(s)
+    adj_mat = zeros(length(s),length(s))
+    for i=1:(length(s)-1)
+        for j=(i+1):length(s)
+            if s[j] >= s[i]
+                for k = (i+1):j
+                    adj_mat[i,k] = 1; adj_mat[k,i] = 1
+                end
+                break
+            elseif j == length(s)
+                for k = (i+1):j
+                    adj_mat[i,k] = 1; adj_mat[k,i] = 1
+                end
+            end
+        end
+
+    end
+    return adj_mat
 end
 
 #################################################################################

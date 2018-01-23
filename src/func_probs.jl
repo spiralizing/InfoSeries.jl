@@ -26,7 +26,7 @@ function prob_marg(serie::Array{AbstractString,1})
 end
 ################################################################################
 #next function returns the rank frequency distribution of an array of "words" of notes
-function rank_freq(serie::Array{Any,1})
+function rank_freq(serie)
     tam = length(serie)
     M = Dict{Any,Int64}()
     for i = 1:tam
@@ -40,7 +40,7 @@ function rank_freq(serie::Array{Any,1})
     return rf
 end
 ################################################################################
-function rank_freqtxt(serie::Array{AbstractString,1})
+function rank_freqtxt(serie)
     tam = length(serie)
     M = Dict{AbstractString,Int64}()
     for i = 1:tam
@@ -53,7 +53,7 @@ function rank_freqtxt(serie::Array{AbstractString,1})
         rf[i,1] = i; rf[i,2] = dist[i][2]; push!(lt, dist[i][1])
     end
 
-    return rf, lt 
+    return rf, lt
 end
 ################################################################################
 function freq(serie::Array{Any,1})
