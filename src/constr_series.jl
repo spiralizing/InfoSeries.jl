@@ -267,6 +267,19 @@ function rank_series(rf, s)
     end
     return rs
 end
+
+function rank_series_i(rf, s)
+    inte=convert(Array{Float64,1},s)
+    rs = zeros(length(s))
+    for i = 1:size(rf)[1]
+        if rf[i,2] == 0; continue; end
+        indx = findin(inte,rf[i,2])
+        for j = 1:length(indx)
+            rs[indx[j]] = i
+        end
+    end
+    return rs
+end
 ################################################################################
 function rank_seriestxt(rf::Array{Any,2}, s::Array{AbstractString,1}, lt::Array{AbstractString,1})
     rs = zeros(length(s))
@@ -355,7 +368,7 @@ function interval_serie(s::Array{Array{Float64,2},1},n::Int64)
 end
 ################################################################################
 #Next function will return the matrix of horizontal visibility graph
-function h_visibility(s::Array{Int64,1})
+function h_visibility(s)
     adj_mat = zeros(length(s),length(s))
     for i=1:(length(s)-2)
         adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
@@ -369,7 +382,7 @@ function h_visibility(s::Array{Int64,1})
     return adj_mat
 end
 
-function h_visibility(s::Array{Float64,1})
+function h_visibility(s)
     adj_mat = zeros(length(s),length(s))
     for i=1:(length(s)-2)
         adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
@@ -414,9 +427,9 @@ end
 #of the HVG
 function hv_blocks(s::Array{Float64,1})
     out = Array{Array{Float64,1},1}()
-    for i=1:(length(s)-1)
-        for j=(i+1):length(s)
-            if s[j] >= s[i]
+    for i=1:(length(s)-2)
+        for j=(i+2):length(s)
+            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
                 push!(out,s[i:j])
                 break
             elseif j == length(s)
@@ -429,21 +442,24 @@ function hv_blocks(s::Array{Float64,1})
 end
 function hv_links(s)
     adj_mat = zeros(length(s),length(s))
-    for i=1:(length(s)-1)
-        for j=(i+1):length(s)
-            if s[j] >= s[i]
-                for k = (i+1):j
-                    adj_mat[i,k] = 1; adj_mat[k,i] = 1
-                end
-                break
-            elseif j == length(s)
+    for i=1:(length(s)-2)
+        adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
+        for j=(i+2):length(s)
+            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
                 for k = (i+1):j
                     adj_mat[i,k] = 1; adj_mat[k,i] = 1
                 end
             end
+                #break
+#            elseif j == length(s)
+#                for k = (i+1):j
+#                    adj_mat[i,k] = 1; adj_mat[k,i] = 1
+#                end
+            #end
         end
 
     end
+    adj_mat[end-1,end] = 1; adj_mat[end,end-1] = 1
     return adj_mat
 end
 
