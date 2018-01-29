@@ -280,6 +280,18 @@ function rank_series_i(rf, s)
     end
     return rs
 end
+
+function freq_series(rf, s)
+    inte=convert(Array{Float64,1},s)
+    rs = zeros(length(s))
+    for i = 1:size(rf)[1]
+        indx = findin(inte,rf[i,2])
+        for j = 1:length(indx)
+            rs[indx[j]] = rf[i,3]
+        end
+    end
+    return rs
+end
 ################################################################################
 function rank_seriestxt(rf::Array{Any,2}, s::Array{AbstractString,1}, lt::Array{AbstractString,1})
     rs = zeros(length(s))
