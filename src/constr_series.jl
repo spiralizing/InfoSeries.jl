@@ -432,8 +432,6 @@ function hv_blocks(s::Array{Float64,1})
             if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
                 push!(out,s[i:j])
                 break
-            elseif j == length(s)
-                push!(out,s[i:j])
             end
         end
 
@@ -449,6 +447,7 @@ function hv_links(s)
                 for k = (i+1):j
                     adj_mat[i,k] = 1; adj_mat[k,i] = 1
                 end
+                break
             end
                 #break
 #            elseif j == length(s)
