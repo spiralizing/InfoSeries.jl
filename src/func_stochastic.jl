@@ -27,3 +27,36 @@ function mat_trans(s::Array{Float64,1})
     end
     return M
 end
+################################################################################
+#Next functions are different kind of random walks over a matrix
+#arguments are: the adjacency matrix or normalized transition matrix,
+#Starting point, if not, leave blank, and number of steps.
+function r_walk(adj_mat, st, tmax)
+    s = Array{Float64,1}()
+    if sum(adj_mat[:,1] > 2.0) #this is to check if the matrix is normalized or not
+        for i = 1:tmax
+            try
+                p = find(adj_mat[:,st]) #encuentra las transiciones posibles
+                nv = rand(p)
+                push!(s,nv)
+                st = nv
+            catch
+                println("Error with the adjacency matrix")
+            end
+        end
+    else
+        for i = 1:tmax
+            p = find(adj_mat[st,:]) #encuentra las transiciones posibles
+            pc = cumsum(prob_mat[st,p]) #hace un arreglo con la distrubucion de probabilidad acumulada en las transiciones.
+            α = rand() #se tira una moneda entre 0-1
+            pi = findfirst(sort([α;pc][:,1]), α) #encuentra el lugar de transicion
+            #v = rand(groups[p[pi]]) #se escoge uno de los bloques dentro del grupo
+            push!(mnotas,p[pi]) #se agrega a la secuencia solo la primer nota del bloque elegido
+        end
+    end
+end
+
+function r_walkrw(adj_mat, st, tmax, dw)
+
+
+end
