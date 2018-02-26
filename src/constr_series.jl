@@ -443,12 +443,31 @@ function hv_blocks(s::Array{Float64,1})
         b = 0
         for j=(i+2):length(s)
             if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
-                push!(out,s[i:j])
-                b = 1
-                break
+                b = j
             end
         end
-        if b == 0; push!(out,s[i:i+1]); end
+        if b != 0
+            push!(out,s[i:b])
+        else
+            b == 0; push!(out,s[i:i+1])
+        end
+    end
+    return out
+end
+function hvi_blocks(s::Array{Float64,1})
+    out = Array{Array{Int64,1},1}()
+    for i=1:(length(s)-2)
+        b = 0
+        for j=(i+2):length(s)
+            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
+                b = j
+            end
+        end
+        if b != 0
+            push!(out,collect(i:b))
+        else
+            b == 0; push!(out,[i,i+1])
+        end
     end
     return out
 end
