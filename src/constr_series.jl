@@ -387,6 +387,7 @@ function h_visibility(s)
         for j=(i+2):length(s)
             if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
                 adj_mat[i,j] = 1; adj_mat[j,i] = 1
+                if s[j] >= s[i]; break; end
             end
         end
     end
@@ -401,6 +402,7 @@ function h_visibility(s)
         for j=(i+2):length(s)
             if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
                 adj_mat[i,j] = 1; adj_mat[j,i] = 1
+                if s[j] >= s[i]; break; end
             end
         end
     end
@@ -437,7 +439,7 @@ end
 ################################################################################
 #next function constructs a series of blocks from a time series, by the criteria
 #of the HVG
-function hv_blocks(s::Array{Float64,1})
+function hv_blocks(s)
     out = Array{Array{Float64,1},1}()
     for i=1:(length(s)-2)
         b = 0
