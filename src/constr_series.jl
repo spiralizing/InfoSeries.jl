@@ -579,3 +579,9 @@ function rf_blocks(b::Array{Array{Float64,1},1}, rf::Array{Any,2})
     end
     return bout
 end
+##################################################################################
+#next function inverts the time series
+function inv_serie(s)
+    s_in = map(x-> -x + 1 + maximum(s), s)
+    return s_in
+end
