@@ -385,7 +385,8 @@ function h_visibility(s)
     for i=1:(length(s)-2)
         adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
         for j=(i+2):length(s)
-            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
+            kt = maximum(s[(i+1):(j-1)])
+            if s[i] > kt && s[j] > kt
                 adj_mat[i,j] = 1; adj_mat[j,i] = 1
                 if s[j] >= s[i]; break; end
             end
@@ -395,20 +396,23 @@ function h_visibility(s)
     return adj_mat
 end
 
-function h_visibility(s)
+
+function visibility(s)
     adj_mat = zeros(length(s),length(s))
     for i=1:(length(s)-2)
         adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
         for j=(i+2):length(s)
-            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
+            k = findlast(adj_mat[i,:]) #locates the index with the last link to i
+            m1 = (s[k]-s[i])/(k-i); m2 = (s[j]-s[k])/(j-k) #estimate the slopes
+            if s[k] <= s[j] &&  m1 < m2  #using the criteria to link the nodes
                 adj_mat[i,j] = 1; adj_mat[j,i] = 1
-                if s[j] >= s[i]; break; end
             end
         end
     end
     adj_mat[end-1,end] = 1; adj_mat[end,end-1] = 1
     return adj_mat
 end
+
 function hd_visibility(s::Array{Int64,1})
     adj_mat = zeros(length(s),length(s))
     for i=1:(length(s)-2)
@@ -444,7 +448,8 @@ function hv_blocks(s)
     for i=1:(length(s)-2)
         b = 0
         for j=(i+2):length(s)
-            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
+            kt = maximum(s[(i+1):(j-1)])
+            if s[i] > kt && s[j] > kt
                 b = j
             end
         end
@@ -456,6 +461,28 @@ function hv_blocks(s)
     end
     return out
 end
+################################################################################
+function v_blocks(s)
+    adj_mat = zeros(length(s),length(s))
+    for i=1:(length(s)-2)
+        adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
+        for j=(i+2):length(s)
+            k = findlast(adj_mat[i,:]) #locates the index with the last link to i
+            m1 = (s[k]-s[i])/(k-i); m2 = (s[j]-s[k])/(j-k) #estimate the slopes
+            if s[k] <= s[j] &&  m1 < m2  #using the criteria to link the nodes
+                adj_mat[i,j] = 1; adj_mat[j,i] = 1
+            end
+        end
+    end
+    adj_mat[end-1,end] = 1; adj_mat[end,end-1] = 1
+    out = Array{Array{Float64,1},1}()
+    for i = 1:(length(s)-1)
+        k = findlast(adj_mat[i,:])
+        push!(out, s[i:k])
+    end
+    return out
+end
+################################################################################
 function hvi_blocks(s::Array{Float64,1})
     out = Array{Array{Int64,1},1}()
     for i=1:(length(s)-2)
@@ -478,7 +505,8 @@ function hv_links(s)
     for i=1:(length(s)-2)
         adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
         for j=(i+2):length(s)
-            if s[i] > maximum(s[(i+1):(j-1)]) && s[j] > maximum(s[(i+1):(j-1)])
+            kt = maximum(s[(i+1):(j-1)])
+            if s[i] > kt && s[j] > kt
                 for k = (i+1):j
                     adj_mat[i,k] = 1; adj_mat[k,i] = 1
                 end
