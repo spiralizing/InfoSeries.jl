@@ -499,7 +499,7 @@ function vr_blocks(s) #recursive blocks
     for i = 1:(length(s)-1)
         k = findfirst(adj_mat[i,:])
         push!(out,s[i:k])
-        while k <= findlast(adj_mat[i,:])
+        while k < findlast(adj_mat[i,:])
             k = findnext(adj_mat[i,:],k+1)
             push!(out, s[i:k])
         end
