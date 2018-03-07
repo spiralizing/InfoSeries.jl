@@ -482,6 +482,30 @@ function v_blocks(s)
     end
     return out
 end
+function vr_blocks(s) #recursive blocks
+    adj_mat = zeros(length(s),length(s))
+    for i=1:(length(s)-2)
+        adj_mat[i,i+1] = 1; adj_mat[i+1,i] = 1
+        for j=(i+2):length(s)
+            k = findlast(adj_mat[i,:]) #locates the index with the last link to i
+            m1 = (s[k]-s[i])/(k-i); m2 = (s[j]-s[k])/(j-k) #estimate the slopes
+            if s[k] <= s[j] &&  m1 < m2  #using the criteria to link the nodes
+                adj_mat[i,j] = 1; adj_mat[j,i] = 1
+            end
+        end
+    end
+    adj_mat[end-1,end] = 1; adj_mat[end,end-1] = 1
+    out = Array{Array{Float64,1},1}()
+    for i = 1:(length(s)-1)
+        k = findfirst(adj_mat[i,:])
+        push!(out,s[i:k])
+        while k <= findlast(adj_mat[i,:])
+            k = findnext(adj_mat[i,:],k+1)
+            push!(out, s[i:k])
+        end
+    end
+    return out
+end
 ################################################################################
 function hvi_blocks(s::Array{Float64,1})
     out = Array{Array{Int64,1},1}()
@@ -610,6 +634,6 @@ end
 ##################################################################################
 #next function inverts the time series
 function inv_serie(s)
-    s_in = map(x-> -x + 1 + maximum(s), s)
+    s_in = map(x-> -x + maximum(s) + minimum(s), s)
     return s_in
 end

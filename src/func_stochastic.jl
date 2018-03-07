@@ -52,7 +52,14 @@ function r_walk(adj_mat, st, tmax)
     end
 end
 
-function r_walkrw(adj_mat, st, tmax, dw)
 
-
+##################################################################################
+#this function finds the blocks that start with r in the g array of blocks
+function findgroup(g, r)
+    ng = size(g)[1]
+    ind = []
+    for i = 1:ng
+        push!(ind,isempty(find(x-> x[1]==r, g[i])))
+    end
+    return find(x -> x==false, ind)
 end
