@@ -501,7 +501,37 @@ function vr_blocks(s) #recursive blocks
         push!(out,s[i:k])
         while k < findlast(adj_mat[i,:])
             k = findnext(adj_mat[i,:],k+1)
+            if isempty(s[i:k]); continue; end
             push!(out, s[i:k])
+        end
+    end
+    return out
+end
+################################################################################
+function vmin_blocks(s) #minimum size blocks. with VG algorithm
+    out = Array{Array{Float64,1},1}()
+    n = 1
+    while n < length(s)
+        br = false
+        for i=n:(length(s)-2)
+            b = Array{Float64,1}()
+            push!(b, s[i]);push!(b,s[i+1])
+            k=i+1
+            for j=(i+2):length(s)
+                if s[k] < s[j] + (s[i]-s[j])*(j-k)/(j-i)
+                    push!(b, s[j])
+                    k+=1
+                else
+                    n = j-1
+                    br = true
+                    break
+                end
+                if j==length(s); br=true;n=j;end
+            end
+            if br
+                push!(out, b)
+                break
+            end
         end
     end
     return out
@@ -637,3 +667,4 @@ function inv_serie(s)
     s_in = map(x-> -x + maximum(s) + minimum(s), s)
     return s_in
 end
+################################################################################

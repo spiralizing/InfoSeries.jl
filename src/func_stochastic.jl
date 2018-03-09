@@ -63,3 +63,14 @@ function findgroup(g, r)
     end
     return find(x -> x==false, ind)
 end
+################################################################################
+function get_glinks(g, m)
+    ng = size(g)[1]
+    indx = Array{Int64,1}()
+    for i = 1:ng
+        if isempty(find(x->x[1]==m,g[i][1]))==false
+            push!(indx, i)
+        end
+    end
+    return indx
+end
