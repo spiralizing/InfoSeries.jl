@@ -513,25 +513,37 @@ function vmin_blocks(s) #minimum size blocks. with VG algorithm
     n = 1
     while n < length(s)
         br = false
+        if n==(length(s)-1)
+            b = Array{Float64,1}()
+            push!(b,s[n]); push!(b,s[end])
+            push!(out,b)
+            n = length(s)
+        end
         for i=n:(length(s)-2)
+            #println("i=",i)
             b = Array{Float64,1}()
             push!(b, s[i]);push!(b,s[i+1])
             k=i+1
             for j=(i+2):length(s)
-                if s[k] < s[j] + (s[i]-s[j])*(j-k)/(j-i)
+                val = s[j] + (s[i]-s[j])*(j-k)/(j-i)
+                #println("val =",val,'\t',"s[k]=",s[k])
+                if s[k] < val
                     push!(b, s[j])
                     k+=1
                 else
                     n = j-1
+                    #println("n=",n)
                     br = true
                     break
                 end
-                if j==length(s); br=true;n=j;end
+                if j==length(s); br=true;n=length(s);end
             end
             if br
+                #println(b)
                 push!(out, b)
                 break
             end
+
         end
     end
     return out
