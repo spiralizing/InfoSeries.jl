@@ -74,3 +74,14 @@ function get_glinks(g, m)
     end
     return indx
 end
+
+function get_slinks(g, m)
+    ng = size(g)[1]
+    indx = Array{Int64,1}()
+    for i = 1:ng
+        if isempty(find(x->x[end]==m,g[i]))==false
+            push!(indx, i)
+        end
+    end
+    return indx
+end
