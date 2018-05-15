@@ -271,11 +271,12 @@ end
 function rank_series_i(rf, s)
     inte=convert(Array{Float64,1},s)
     rs = zeros(length(s))
+    N = size(rf)[1]
     for i = 1:size(rf)[1]
-        if rf[i,2] == 0; continue; end
+        #if rf[i,2] == 0; continue; end
         indx = findin(inte,rf[i,2])
         for j = 1:length(indx)
-            rs[indx[j]] = i
+            rs[indx[j]] = -i + N + 1
         end
     end
     return rs
