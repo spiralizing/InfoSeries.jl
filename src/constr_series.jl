@@ -509,6 +509,21 @@ function vr_blocks(s) #recursive blocks
     return out
 end
 ################################################################################
+#returns a list of edges and a list of nodes.
+function admat_out(am)
+    mat_out = []; n_out = []; ng = size(am)[1]
+    for i=1:ng #this step is for printing the output transition matrix.
+        for j=1:ng
+            if am[i,j]==0; continue; end
+            push!(mat_out, [i j])
+            push!(n_out, i)
+        end
+    end
+    #writecsv("smw-a1.csv", vcat(mat_out...))
+    #writecsv("smw-a1n.csv", vcat(n_out...))
+    return n_out, mat_out
+end
+################################################################################
 function vmin_blocks(s) #minimum size blocks. with VG algorithm
     out = Array{Array{Float64,1},1}()
     n = 1
