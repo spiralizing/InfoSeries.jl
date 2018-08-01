@@ -365,7 +365,7 @@ function dfamod_calc(notas::Array{Float64,1}, temp::Array{Float64,1})
         incserie = differ_serie(incserie)
         al = dfa_calc(incserie, temp, 1)
     end
-    #una vez tenida la serie de incrementos anticorrelacionada
+    #una vez obtenida la serie de incrementos anticorrelacionada
     #se descompone en magnitudes y signos
     magserie = magnitude_serie(incserie)
     sgnserie = sign_serie(incserie)
@@ -672,4 +672,24 @@ function reduce_hv(rf::Array{Any,2}, rs::Array{Float64,1}, adj_mat_d::Array{Floa
         end
     end
     return new_mat, rs_new
+end
+################################################################################
+#next function is for estimating the recurrence map for a time series
+#Imputs are: timeseries s, size window τ and treshold ϵ
+function rec_map(s,τ,ϵ)
+    t = div(length(s),τ)
+    A = zeros(t,t)
+    for i =0:(t-2)
+        b1i = τ * i + 1; b1f= τ * i + τ
+        for j = i+1:(t-1)
+            b2i = τ * j +1; b2f = τ *j +τ
+            #println(b1i,'-',b1f,'\t',b2i,'-',b2f)
+            d = euclidean(s[b1i:b1f], s[b2i:b2f])
+            if d < ϵ
+                A[i+1,j+1] = 1
+            end
+            #println(d)
+        end
+    end
+    return A
 end
