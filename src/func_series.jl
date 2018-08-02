@@ -183,7 +183,7 @@ end
 ################################################################################################################
 #La siguiente funcion calcula el DFA, el primer argumento son las variables, el segundo es el eje del tiempo
 #el tercer argumento es una opcion p=1 para la serie original, p=0 para las series de incremento y signo
-function dfa_calc(notas, temp, p)
+function dfa_calc(notas::Array{Float64,2}, temp, p)
     tam = size(notas)
     serie = zeros(tam[1], tam[2])
     #se integra la serie
@@ -250,7 +250,7 @@ function dfa_calc(notas, temp, p)
 end
 ##################################################################################################################################
 #Para una sola voz
-function dfa_calc(notas, temp, p)
+function dfa_calc(notas::Array{Float64,1}, temp, p)
     tam = length(notas)
     serie = zeros(tam)
     #se integra la serie
