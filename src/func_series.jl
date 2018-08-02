@@ -676,9 +676,10 @@ end
 ################################################################################
 #next function is for estimating the recurrence map for a time series
 #Imputs are: timeseries s, size window τ and treshold ϵ
+#returns two matrices, one of conectivity and the other of normalized distances.
 function rec_map(s,τ,ϵ)
     t = div(length(s),τ)
-    A = zeros(t,t)
+    A = zeros(t,t); An = zeros(t,t)
     for i =0:(t-2)
         b1i = τ * i + 1; b1f= τ * i + τ
         for j = i+1:(t-1)
@@ -687,9 +688,29 @@ function rec_map(s,τ,ϵ)
             d = euclidean(s[b1i:b1f], s[b2i:b2f])
             if d < ϵ
                 A[i+1,j+1] = 1
+                An[i+1,j+1] = (ϵ-d)/ϵ
             end
             #println(d)
         end
     end
-    return A
+    return A, An
+end
+#Next function is the same as the recurrence plot but with a sliding window
+function rec_swmap(s,τ,ϵ)
+    t = length(s)-τ+1
+    A = zeros(t,t); An = zeros(t,t)
+    for i =1:(t-1)
+        b1i = i; b1f=i + τ
+        for j = (i+1):(t-τ+1)
+            b2i =j; b2f =j+τ
+            #println(b1i,'-',b1f,'\t',b2i,'-',b2f)
+            d = euclidean(s[b1i:b1f], s[b2i:b2f])
+            if d < ϵ
+                A[i+1,j+1] = 1
+                An[i+1,j+1] = (ϵ-d)/ϵ
+            end
+            #println(d)
+        end
+    end
+    return A, An
 end
