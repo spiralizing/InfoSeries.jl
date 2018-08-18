@@ -103,7 +103,8 @@ function nota_intens!(s::Array{Float64,1})
     end
 end
 #########################################################################################################
-#La siguiente funcion es para filtrar csv,
+#La siguiente funcion es para filtrar csv, regresa una serie
+#donde da el tiempo en milisegundos donde inicia la nota, termina, el pitch y la intensidad en una escala arbitraria
 function filt_vozcsv(v::Array{Any,2})
     sti = Float64[]
     stf = Float64[]
@@ -159,39 +160,35 @@ function note_vec(v::Array{Float64,2})
 end
 #######################################################################################
 function csvtoserie(s::Array{Any,2}, sd::Int64)
-    #sd is the subdivision, had to correct it
+    #sd is the subdivision, is the smallest time duration of a note, usualy is 8 (1/8) or 16 (1/16), you can put 8 to try.
     mq = s[1,6] #quarter of a note
-    nv = s[findlast(s[:,3], " Note_on_c"),1] - 1
-    voces = Array(Array{Float64,2},nv)
-    if findfirst(s[:,3], " Note_off_c") == 0
-        for i = 2:(nv+1)
-            b = s[s[:,1].==i,:]
-            #ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
-            #fin = findlast(s[s[:,1].==i,3], " Note_on_c")
-            #println(ini,'\t', fin)
-            if size(b[b[:,3].==" Note_on_c", :])[1] == 0; continue; end
-            voces[i-1] = float(filt_vozcsv(b[b[:,3].==" Note_on_c", :]))
+    nv = s[findlast(s[:,3], " Note_on_c"),1] - 1 #estimates how many voices are in the midi
+    voces = Array(Array{Float64,2},nv) #initialze an array
+    if findfirst(s[:,3], " Note_off_c") == 0 #checks if the midi has events of note_off
+        for i = 2:(nv+1) #if does not, it construct the series in this way
+            b = s[s[:,1].==i,:] #takes the events of the voice i
+            if size(b[b[:,3].==" Note_on_c", :])[1] == 0; continue; end #checks if there are notes in the channel
+            voces[i-1] = float(filt_vozcsv(b[b[:,3].==" Note_on_c", :])) #construct an array of information of initial time, finish time, pitch and intensity.
         end
     else
-        for i = 2:(nv+1)
-            ini = findfirst(s[s[:,1].==i,3], " Note_on_c")
-            fin = findlast(s[s[:,1].==i,3], " Note_off_c")
-            #println(ini,'\t', fin)
+        for i = 2:(nv+1) #if has note_off events , it does this way
+            ini = findfirst(s[s[:,1].==i,3], " Note_on_c") #initial time
+            fin = findlast(s[s[:,1].==i,3], " Note_off_c") #finish time
             if ini == 0 || fin == 0; continue; end
-            voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:]))
+            voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:])) #construct an array of information of initial time, finish time, pitch and intensity
         end
     end
-    voces = voces[map(x -> isdefined(voces, x ), 1:length(voces))]
+    voces = voces[map(x -> isdefined(voces, x ), 1:length(voces))] #these two steps are just to trow away the voices that are empty.
     filter!(x -> size(x)[1] != 0,voces)
-    nv = size(voces)[1]
-    q = mq/ round(Int, mq / min_voces(voces, mq / sd))
-    gaps_notas!(voces,q)
-    gaps_silencios!(voces,q)
-    rounding!(voces, q)
-    tmax = round(Int,max_tempo(voces,nv))
-    series = zeros(tmax,nv+1)
-    series[:,1] = indice(tmax)
-    for i=2:(nv+1)
+    nv = size(voces)[1] #the real number of voices
+    q = mq/ round(Int, mq / min_voces(voces, mq / sd)) #defines the unit of time  q
+    gaps_notas!(voces,q) #fixes some gaps of miliseconds between the notes
+    gaps_silencios!(voces,q) #fixes some gaps of milisecons of rests
+    rounding!(voces, q) #rounds up some possible decimals in the time
+    tmax = round(Int,max_tempo(voces,nv)) #gets the total lenght of the piece
+    series = zeros(tmax,nv+1)  #this is the initialization of the output array
+    series[:,1] = indice(tmax) #this is just the index
+    for i=2:(nv+1) #constructs the output time series
         series[:,i] = serie_notas(voces[i-1],tmax)
     end
     return series
