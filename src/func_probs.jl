@@ -2,18 +2,7 @@
 ################################################################################
 #Esta funcion calcula la probabilidad marginal de una variable aleatoria
 #toma como entrada una serie y regresa un arreglo de marginales
-function prob_marg(serie::Array{Float64,1})
-    tam = length(serie)
-    M = Dict{Float64,Float64}()
-    for i = 1:tam
-        M[serie[i]] = get(M, serie[i], 0) + 1
-    end
-    for j in keys(M)
-        M[j] = M[j] / tam
-    end
-    return M
-end
-function prob_marg(serie::Array{AbstractString,1})
+function prob_marg(serie)
     tam = length(serie)
     M = Dict{AbstractString,Float64}()
     for i = 1:tam
@@ -343,6 +332,15 @@ function sh_ent(p::Array{Float64,1})
         if p[i] == 0; continue; else
             ent += p[i] * log10(p[i])
         end
+    end
+    return -ent
+end
+#next function estimates the shanon entropy of a symbolic sequence.
+function symb_sh_ent(s)
+    ent = 0
+    p = prob_marg(s) #se calculan los marginales
+    for i in keys(p) #se estima la entropia de shanon.
+        ent += p[i] * log10(p[i])
     end
     return -ent
 end
