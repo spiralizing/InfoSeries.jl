@@ -459,7 +459,7 @@ function fast_fourier(s::Array{Float64,1})
     return [indo fo]
 end
 #################################################################################################################
-function tras_serie!(s::Array{Float64,2})
+function tras_serie!(s)
     mi = zeros(size(s)[2])
     for i = 1:(size(s)[2]-1)
         mi[i] = minimum(filter(x -> x!=0, s[:,i+1]))-1
@@ -473,7 +473,7 @@ function tras_serie!(s::Array{Float64,2})
     return s
 end
 ########################################################################################
-function trasup_serie!(s::Array{Float64,2},s2::Array{Float64,2}) #mueve una serie a la altura original, se toma como referencia la serie original
+function trasup_serie!(s,s2) #mueve una serie a la altura original, se toma como referencia la serie original
     mi = zeros(size(s)[2])
     for i = 1:(size(s)[2]-1)
         mi[i] = minimum(filter(x -> x!=0, s2[:,i+1]))-1
