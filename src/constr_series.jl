@@ -1,5 +1,5 @@
 #Se definen las funciones
-function gaps_notas!(s::Array{Array{Float64,2},1}, q::Float64) #La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que hay entre notas que terminan y que empiezan
+function gaps_notas!(s, q) #La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que hay entre notas que terminan y que empiezan
     for v in s
         for i = 1:(size(v)[1]-1)
             m = abs(v[i,2] - v[i+1,1])
@@ -12,7 +12,7 @@ function gaps_notas!(s::Array{Array{Float64,2},1}, q::Float64) #La funcion toma 
       end
 end
 #########################################################################################################################################################################
-function gaps_silencios!(s::Array{Array{Float64,2},1},q::Float64) # La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que puede haber entre los silencios y donde empiezan las notas
+function gaps_silencios!(s,q) # La funcion toma de entrada el arreglo de notas y corrige los pequenios gaps que puede haber entre los silencios y donde empiezan las notas
     sm = q
     for v in s
         for i = 1:(size(v)[1]-1) #corrige los gaps que hay entre silencios y notas
@@ -29,9 +29,9 @@ function gaps_silencios!(s::Array{Array{Float64,2},1},q::Float64) # La funcion t
     end
 end
 #################################################################################################################################################
-function min_voces(Voces::Array{Array{Float64,2},1}, div::Float64) #la funcion regresa el minimo valor de duracion
+function min_voces(Voces, div) #la funcion regresa el minimo valor de duracion
     ns = size(Voces)[1]
-    mins = Array(Float64,ns)
+    mins = Array{Float64}(undef,ns)
     for i = 1:ns
         dif = filter(x->x >= div,Voces[i][:,2] - Voces[i][:,1])
         mins[i] = minimum(dif[find(dif)])
@@ -39,8 +39,8 @@ function min_voces(Voces::Array{Array{Float64,2},1}, div::Float64) #la funcion r
     return minimum(mins)
 end
 ################################################################################################################################################
-function max_tempo(Voces::Array{Array{Float64,2},1}, ns::Int64) #la funcion encuentra el tiempo maximo de termino de notas, es decir donde termina la pieza
-    Tfinal = Array(Float64,ns)
+function max_tempo(Voces, ns) #la funcion encuentra el tiempo maximo de termino de notas, es decir donde termina la pieza
+    Tfinal = Array{Float64}(undef,ns)
     for i = 1:ns
         Tfinal[i] = maximum(Voces[i][:,2])
     end
@@ -48,12 +48,15 @@ function max_tempo(Voces::Array{Array{Float64,2},1}, ns::Int64) #la funcion encu
 end
 ################################################################################################################################
 #La siguiente funcion corrige los numeros fraccionarios que existen en las Voces
-function rounding!(voces::Array{Array{Float64,2},1}, q::Float64)
+function rounding!(voces, q)
     nv = size(voces)[1]
-    for i =1:nv; voces[i][:,1] = ceil(voces[i][:,1] / q) ; voces[i][:,2] = ceil(voces[i][:,2] / q); end
+    for i =1:nv
+        voces[i][:,1] = map(x-> ceil(x/q), voces[i][:,1])
+        voces[i][:,2] = map(x-> ceil(x/q), voces[i][:,2])
+    end
 end
 #######################################################################################################################################
-function serie_notas(Voz::Array{Float64,2}, tmax::Int64) #construye la serie de tiempo teniendo como entrada el arreglo de inicio - final - voz
+function serie_notas(Voz, tmax) #construye la serie de tiempo teniendo como entrada el arreglo de inicio - final - voz
     serie = zeros(tmax)
     ini = Voz[:,1]
     dura = Voz[:,2] - Voz[:,1] #este es el arreglo de duraciones
@@ -129,7 +132,7 @@ function filt_vozcsv(v::Array{Any,2})
 end
 ####################################################################################################################
 function indice(tmax::Int64) #esta funcion solo regresa el arreglo que lleva el indice(numero) de las notas (o el eje x)
-    ind = Array(Float64,tmax)
+    ind = Array{Float64}(undef,tmax)
     for i = 1:tmax
         ind[i] = convert(Float64, i)
     end
@@ -159,11 +162,11 @@ function note_vec(v::Array{Float64,2})
     return vec
 end
 #######################################################################################
-function csvtoserie(s::Array{Any,2}, sd::Int64)
+function csvtoserie(s, sd)
     #sd is the subdivision, is the smallest time duration of a note, usualy is 8 (1/8) or 16 (1/16), you can put 8 to try.
     mq = s[1,6] #quarter of a note
     nv = s[findlast(s[:,3], " Note_on_c"),1] - 1 #estimates how many voices are in the midi
-    voces = Array(Array{Float64,2},nv) #initialze an array
+    voces = Array{Matrix}(undef,nv) #initialze an array
     if findfirst(s[:,3], " Note_off_c") == 0 #checks if the midi has events of note_off
         for i = 2:(nv+1) #if does not, it construct the series in this way
             b = s[s[:,1].==i,:] #takes the events of the voice i
@@ -178,7 +181,7 @@ function csvtoserie(s::Array{Any,2}, sd::Int64)
             voces[i-1] = float(filt_vozcsv(s[s[:,1].==i,:][ini:fin,:])) #construct an array of information of initial time, finish time, pitch and intensity
         end
     end
-    voces = voces[map(x -> isdefined(voces, x ), 1:length(voces))] #these two steps are just to trow away the voices that are empty.
+    #voces = voces[map(x -> isdefined(voces, x ), 1:length(voces))] #these two steps are just to trow away the voices that are empty.
     filter!(x -> size(x)[1] != 0,voces)
     nv = size(voces)[1] #the real number of voices
     q = mq/ round(Int, mq / min_voces(voces, mq / sd)) #defines the unit of time  q
