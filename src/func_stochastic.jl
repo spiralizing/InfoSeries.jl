@@ -185,3 +185,30 @@ function init_swmat(i_groups, ϵ)
     end
     return am
 end
+#################################################################################
+#Next function returns the transition matrix of a symbolic series, with its alphabet.
+#matrix and vector.
+function tmat_txt(s)
+    nl = sort(unique(s))
+
+    na = length(nl) #numero de letras
+    sn = zeros(Int64,length(s))
+
+    for i = 1:na #paso de letras a numeros por practicidad
+        indx = findall(x-> x == nl[i], s)
+        for j = 1:length(indx)
+            sn[indx[j]] = i
+        end
+    end
+
+    mat = zeros(na,na) #inicializo matriz de transicion
+    #mat_a = zeros(na,na) #matriz de adyacencia.
+
+    for i = 1:length(s)-1
+        mat[sn[i],sn[i+1]] += 1
+        #mat_a[sn[i],sn[i+1]] = 1
+    end
+
+    p_mat = mat ./ sum(mat, dims=2)
+    return p_mat, nl
+end

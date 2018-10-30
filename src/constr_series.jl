@@ -693,3 +693,21 @@ function inv_serie(s)
     return s_in
 end
 ################################################################################
+#this function returns a symbolic series from text file.
+function txt_series(f)
+    #read the file
+    s = read(f, String)
+    #st2 = replace(s2,r"\n"i,"")
+    #st2 = replace(st2,r"\r"i,"")
+    #next lines are for removing every character that is not a letter.
+    st = replace(s, r"[^a-z Ñ ñ Á á Ĉ ĉ Ĝ ĝ Ĥ ĥ É é Í í Ĵ ĵ Ŝ ŝ Ŭ ŭ Ó ó Ú ú ü Ä ä Ü ü Ö ö ẞ ß]"i => " ")
+    st = replace(st, r"[A-Z Ñ Á É Í Ó Ú Ĉ Ĝ Ĥ Ĵ Ŝ Ŭ Ä Ü Ö ẞ]", lowercase) #replace(s, r"[^A-Z]" => lowercase)
+    #st = replace(s, r"[^a-z]"i => " ")
+    #st = replace(st, r"[A-Z]", lowercase) #replace(s, r"[^A-Z]" => lowercase)
+
+    l = convert(Array{AbstractString,1},split(st," "))
+    filter!(x -> x!="",l)
+    s = split(join(l," "),"")
+    filter!(isascii, s)
+    return s
+end
