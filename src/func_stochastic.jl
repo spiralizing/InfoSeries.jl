@@ -212,3 +212,56 @@ function tmat_txt(s)
     p_mat = mat ./ sum(mat, dims=2)
     return p_mat, nl
 end
+################################################################################
+#Next function returns a text generated with a markov chain, given an array of words (original text)
+function markov_txt(l,nv)
+    s = split(join(l," "),"")
+    nl = unique(s)
+    na = length(nl) #numero de letras
+
+    sn = zeros(Int64,length(s))
+
+    for i = 1:na #paso de letras a numeros por practicidad
+        indx = findall(x-> x == nl[i], s)
+        for j = 1:length(indx)
+            sn[indx[j]] = i
+        end
+    end
+    mat = zeros(na,na) #inicializo matriz de transicion
+    for i = 1:length(s)-1
+        mat[sn[i],sn[i+1]] += 1
+    end
+    p_mat = mat ./ sum(mat, dims=2)
+    #heatmap(p_mat); gui()
+    n_txt = Array{String,1}()
+    n = rand(1:27)
+
+    for i = 1:length(s)*nv
+        #p_mat = mat ./ sum(mat,2) #se calculan las probabilidades de transicion
+
+        #push!(eigsw, abs.(eigvals(p_mat)))
+
+        p = find(p_mat[n,:]) #encuentra las transiciones posibles
+        pc = cumsum(p_mat[n,p]) #hace un arreglo con la distrubucion de probabilidad acumulada en las transiciones.
+        α = rand() #se tira una moneda entre 0-1
+        nv = findfirst(sort([α;pc][:,1]), α) #encuentra el lugar de transicion
+        push!(n_txt,nl[p[nv]]) #se agrega a la secuencia la letra
+        #mat[n,p[nv]] += δw #se refuerza el enlace
+        n = p[nv]
+    end
+
+    txt_mk2 = split(join(n_txt), " ")
+    return txt_mk2
+end
+################################################################################
+#Next function creates an array with random spacing, (intermitent silence)
+#given an array of words (original text)
+function random_spacing(l)
+    wv = WeightVec([0.5,0.5])
+    txt = split(join(l),"")
+    b=sample(["+","*"], wv,length(txt))
+    v = Array{String,1}(length(txt)*2)
+    v[1:2:end] = txt
+    v[2:2:end] = b
+    return split(replace(join(v), r"[*]",""),"+")
+end
