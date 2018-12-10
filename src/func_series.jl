@@ -714,3 +714,34 @@ function rec_swmap(s,τ,ϵ)
     end
     return A, An
 end
+################################################################################
+#Correlation matrix for gene expression.
+function corr_mat(gene)
+    ng = size(gene)[1]
+    c_mat = zeros(ng,ng)
+    for i = 1:(ng-1)
+        c_mat[i,i] = 1.0
+        for j = (i+1):ng
+            c_mat[j,i] = c_mat[i,j] = cor(gene[i,:],gene[j,:])
+            #sp_mat[i,j] = corspearman(gene[i,:],gene[j,:])
+        end
+    end
+    return c_mat
+end
+################################################################################
+function cmat(data)
+    return data*data' ./ size(data)[1]
+end
+################################################################################
+#computes the distance Dij = sum | v1^2 - v2^2 | between the eigenvectors (matrix)
+function distev_mat(evec)
+    ng = size(evec)[2]
+    eu_mat = zeros(ng,ng)
+    for i = 1:(ng-1)
+        for j = (i+1):ng
+            eu_mat[j,i] = sum(map(x->abs(x),map(x->x^2,evec[:,i]) - map(x->x^2,evec[:,j])))
+            #sp_mat[i,j] = corspearman(gene[i,:],gene[j,:])
+        end
+    end
+    return eu_mat
+end

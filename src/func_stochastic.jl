@@ -15,13 +15,13 @@ function mat_trans_p(s::Array{Float64,1},tam::Int64)
     return M
 end
 function mat_trans(s::Array{Float64,1})
-    s = convert(Array{Int64,1}, s)
-    tam = maximum(s)
+    si = convert(Array{Int64,1}, s-minimum(s)+1)
+    tam = maximum(s) - minimum(s) + 1
     M = zeros(tam,tam)
     for i=1:(length(s)-1)
-        M[s[i],s[i+1]] = 1
+        M[si[i],si[i+1]] = 1
     end
-    return M
+    return M, [minimum(s) maximum(s)]
 end
 ################################################################################
 #Next functions are different kind of random walks over a matrix
