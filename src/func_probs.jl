@@ -29,6 +29,20 @@ function rank_freq(serie)
     return rf
 end
 ################################################################################
+function rank_freq_subs(serie)
+    tam = length(serie)
+    M = Dict{Any,Int64}()
+    for i = 1:tam
+        M[serie[i]] = get(M, serie[i], 0) + 1
+    end
+    dist = sort(collect(M), by = tuple -> last(tuple), rev=true)
+    rf = Array{Any}(length(dist),3)
+    for i = 1:length(dist)
+        rf[i,1] = i; rf[i,2] = join(dist[i][1],","); rf[i,3] = dist[i][2];
+    end
+    return rf
+end
+################################################################################
 function rank_freqtxt(serie)
     tam = length(serie)
     M = Dict{AbstractString,Int64}()

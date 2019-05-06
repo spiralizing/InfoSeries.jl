@@ -352,7 +352,7 @@ function dfamod_calc(notas::Array{Float64,1}, temp::Array{Float64,1})
     incserie = zeros(tam)
     sgnserie = zeros(tam)
     magserie = zeros(tam)
-    graficas = Array(Array{Float64, 2}, 2) #es el arreglo de graficas
+    #graficas = Array(Array{Float64, 2}, 2) #es el arreglo de graficas
     #se necesita construir primero la serie descompuesta de magnitudes y signos
     #para esto, el metodo de ashkenazy sugiere primero asegurar que la serie
     #de incrementos este anticorrelacionada (α < 0.5)
@@ -368,10 +368,10 @@ function dfamod_calc(notas::Array{Float64,1}, temp::Array{Float64,1})
     #una vez obtenida la serie de incrementos anticorrelacionada
     #se descompone en magnitudes y signos
     magserie = magnitude_serie(incserie)
-    sgnserie = sign_serie(incserie)
+    #sgnserie = sign_serie(incserie)
 
-    graficas[1] = dfa_calc(magserie, temp, 0)[2]
-    graficas[2] = dfa_calc(sgnserie, temp, 0)[2]
+    graficas = dfa_calc(magserie, temp, 0)[2]
+    #graficas[2] = dfa_calc(sgnserie, temp, 0)[2]
     return graficas
 end
 ################################################################################################################################
@@ -726,6 +726,7 @@ function corr_mat(gene)
             #sp_mat[i,j] = corspearman(gene[i,:],gene[j,:])
         end
     end
+    c_mat[ng,ng] = 1
     return c_mat
 end
 ################################################################################
