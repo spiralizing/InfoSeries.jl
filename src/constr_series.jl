@@ -831,7 +831,7 @@ function get_onoff_notes(s)
         l1 = length(tmp); l2 = length(tmp2)
         if l1 != l2
             nt = min(l1,l2)
-            note = [i for i=1:nt]
+            note = [dn[i] for j=1:nt]
             in_fi[i] = [tmp[1:nt] tmp2[1:nt] note]
         else
             note = [dn[i] for j = 1:length(tmp)]
@@ -896,7 +896,7 @@ function get_onon_notes(s)
         l1 = length(tmp); l2 = length(tmp2)
         if l1 != l2
             nt = min(l1,l2)
-            note = [i for i=1:nt]
+            note = [dn[i] for j=1:nt]
             in_fi[i] = [tmp[1:nt] tmp2[1:nt] note]
         else
             note = [dn[i] for j = 1:length(tmp)]
